@@ -1,7 +1,7 @@
 // a simple way to organize config with dot notation
 export const getConfig = (key: string) => {
   const config = {
-    service: "wallets",
+    service: process.env.SERVICE || "wallets",
     environment: process.env.NODE_ENV || "development",
     isDevelopment: process.env.NODE_ENV === "development",
     isProduction: process.env.NODE_ENV === "production",

@@ -1,13 +1,11 @@
-import { Catch, RpcExceptionFilter, ArgumentsHost, Logger } from '@nestjs/common';
-import { BaseError } from '@credpal-fx-trading-app/common';
-import { Observable, of, throwError } from 'rxjs';
+import { Catch, RpcExceptionFilter, ArgumentsHost } from "@nestjs/common";
+import { BaseError } from "@credpal-fx-trading-app/common";
+import { Observable, of, throwError } from "rxjs";
+import { LoggingService } from "../services/logging.service";
 
-// TODO: use logger from @credpal-fx-trading-app/common
 @Catch()
 export class GrpcExceptionFilter implements RpcExceptionFilter {
-  private readonly logger = new Logger(GrpcExceptionFilter.name);
-
-  constructor() {}
+  constructor(private readonly logger: LoggingService) {}
 
   catch(exception: any, host: ArgumentsHost): Observable<any> {
     let errorBody;
@@ -25,8 +23,8 @@ export class GrpcExceptionFilter implements RpcExceptionFilter {
 
       // Mask the internal details for security, return a generic 500
       errorBody = {
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'An internal server error occurred',
+        code: "INTERNAL_SERVER_ERROR",
+        message: "An internal server error occurred",
         statusCode: 500,
         details: [],
       };

@@ -1,7 +1,7 @@
 // a simple way to organize config with dot notation
 export const getConfig = (key: string) => {
   const config = {
-    service: "gateway",
+    service: process.env.SERVICE || "gateway",
     app: {
       port: parseInt(process.env.PORT!) || 3000,
     },

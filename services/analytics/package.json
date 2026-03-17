@@ -11,8 +11,8 @@
     "build": "nest build --builder tsc",
     "clean": "rm -rf ./dist ./tsconfig.tsbuildinfo",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "nest start analytics",
-    "dev": "nest start analytics --watch --builder tsc",
+    "start": "cross-env NODE_OPTIONS=\"--import=../../scripts/instrumentation.js\" nest start analytics",
+    "dev": "cross-env NODE_OPTIONS=\"--import=../../scripts/instrumentation.js\" nest start analytics --watch --builder tsc",
     "debug": "nest start analytics --debug --watch",
     "prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
@@ -22,6 +22,10 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@credpal-fx-trading-app/common": "^1.0.0",
+    "@credpal-fx-trading-app/constants": "^1.0.0",
+    "@credpal-fx-trading-app/proto": "^1.0.0",
+    "@credpal-fx-trading-app/runtime": "^1.0.0",
     "@grpc/grpc-js": "^1.12.6",
     "@grpc/proto-loader": "^0.7.13",
     "@grpc/reflection": "^1.0.4",
@@ -32,10 +36,10 @@
     "@nestjs/mapped-types": "^2.1.0",
     "@nestjs/microservices": "^11.0.20",
     "@nestjs/platform-express": "^11.0.20",
-    "@credpal-fx-trading-app/common": "^1.0.0",
-    "@credpal-fx-trading-app/constants": "^1.0.0",
-    "@credpal-fx-trading-app/proto": "^1.0.0",
-    "@credpal-fx-trading-app/runtime": "^1.0.0"
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.71.0",
+    "@opentelemetry/sdk-node": "^0.213.0",
+    "@opentelemetry/sdk-trace-node": "^2.6.0"
   },
   "jest": {
     "moduleFileExtensions": [

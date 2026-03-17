@@ -1,15 +1,21 @@
-import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus, Logger } from '@nestjs/common';
-import { HttpAdapterHost } from '@nestjs/core';
-import { BaseError } from '@credpal-fx-trading-app/common';
-import { Common } from '@credpal-fx-trading-app/proto';
+import {
+  ExceptionFilter,
+  Catch,
+  ArgumentsHost,
+  HttpException,
+  HttpStatus,
+} from "@nestjs/common";
+import { HttpAdapterHost } from "@nestjs/core";
+import { BaseError } from "@credpal-fx-trading-app/common";
+import { LoggingService } from "@credpal-fx-trading-app/runtime";
+import { Common } from "@credpal-fx-trading-app/proto";
 
-
-// TODO: this should use the logger from @credpal-fx-trading-app/common
 @Catch()
 export class GlobalExceptionsFilter implements ExceptionFilter {
-  private readonly logger = new Logger(GlobalExceptionsFilter.name);
-
-  constructor(private readonly httpAdapterHost: HttpAdapterHost) {}
+  constructor(
+    private readonly httpAdapterHost: HttpAdapterHost,
+    private readonly logger: LoggingService,
+  ) {}
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const { httpAdapter } = this.httpAdapterHost;
@@ -18,8 +24,8 @@ export class GlobalExceptionsFilter implements ExceptionFilter {
     let httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
     let responseBody = {
       statusCode: 500,
-      message: 'Internal server error',
-      code: 'INTERNAL_SERVER_ERROR',
+      message: "Internal server error",
+      code: "INTERNAL_SERVER_ERROR",
       details: [] as any[],
     } as Common.Error;
 
@@ -30,7 +36,9 @@ export class GlobalExceptionsFilter implements ExceptionFilter {
       responseBody.code = exception.code;
       responseBody.details = exception.details || [];
 
-      this.logger.warn(`Business Error: ${exception.message} (${exception.code})`);
+      this.logger.warn(
+        `Business Error: ${exception.message} (${exception.code})`,
+      );
     } else if (exception instanceof HttpException) {
       httpStatus = exception.getStatus();
       const response = exception.getResponse();
@@ -39,11 +47,14 @@ export class GlobalExceptionsFilter implements ExceptionFilter {
       responseBody.code = `HTTP_${httpStatus}`;
 
       // Handle ValidationPipe's array of errors
-      if (typeof response === 'object' && response !== null) {
+      if (typeof response === "object" && response !== null) {
         const resObj = response as any;
         responseBody.message = resObj.message || exception.message;
-        responseBody.details = Array.isArray(resObj.message) ? resObj.message : [];
-        if (resObj.error) responseBody.code = resObj.error.toUpperCase().replace(/\s/g, '_');
+        responseBody.details = Array.isArray(resObj.message)
+          ? resObj.message
+          : [];
+        if (resObj.error)
+          responseBody.code = resObj.error.toUpperCase().replace(/\s/g, "_");
       } else {
         responseBody.message = exception.message;
       }
@@ -58,8 +69,11 @@ export class GlobalExceptionsFilter implements ExceptionFilter {
       this.logger.error(`ARRAY MESSAGE: ${JSON.stringify(responseBody)}`);
 
       responseBody.message =
-        typeof responseBody.message[0] === 'string' ? responseBody.message[0] : 'Internal server error';
-      if (Array.isArray(responseBody.message)) responseBody.statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+        typeof responseBody.message[0] === "string"
+          ? responseBody.message[0]
+          : "Internal server error";
+      if (Array.isArray(responseBody.message))
+        responseBody.statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
     }
 
     httpAdapter.reply(ctx.getResponse(), responseBody, httpStatus);

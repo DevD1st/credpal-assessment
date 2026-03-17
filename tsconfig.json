@@ -1,0 +1,14 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/constants" },
+    { "path": "packages/common" },
+    { "path": "packages/proto" },
+    { "path": "packages/runtime" },
+    { "path": "services/accounts" },
+    { "path": "services/notifications" },
+    { "path": "services/wallets" },
+    { "path": "services/analytics" },
+    { "path": "services/gateway" }
+  ]
+}

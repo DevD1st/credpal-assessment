@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package common;
+
+// ------------------------------------------
+// Errors
+// ------------------------------------------
+message Error {
+  string code = 1; // error code i.e 'ERROR'
+  string message = 2; 
+  int32 statusCode = 3; // status code i.e 500
+  repeated ErrorDetail details = 4;
+}
+
+message ErrorDetail {
+  string type = 1;
+  string label = 2;
+  string value = 3;
+}
+
+// ------------------------------------------
+// Requests
+// ------------------------------------------
+
+// ------------------------------------------
+// Responses
+// ------------------------------------------
+// Empty message
+message Empty {}
+
+message EmptyResponse {
+  oneof response {
+    Empty data = 1;
+    Error error = 2;
+  }
+}

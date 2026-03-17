@@ -1,0 +1,31 @@
+{
+  "name": "@credpal-fx-trading-app/proto",
+  "version": "1.0.0",
+  "description": "Protocol buffer definitions for Credpal FX services",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "generate": "protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto.cmd --ts_proto_out=./src/generated --proto_path=../../ --ts_proto_opt=importSuffix=.js,--ts_proto_opt=useDate=true,removeEnumPrefix=true,stringEnums=true,esModuleInterop=true,outputServices=generic-definitions,useExactTypes=false,oneof=properties, ../../protobuf/*.proto",
+    "build": "npm run generate && tsc -p ./tsconfig.json",
+    "clean": "rm -rf ./dist ./tsconfig.tsbuildinfo ./src/generated",
+    "dev": "tsc -p ./tsconfig.json --watch"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "^1.12.6",
+    "@grpc/proto-loader": "^0.7.13"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3",
+    "ts-proto": "^2.6.1"
+  }
+}

@@ -1,0 +1,173 @@
+{
+  "name": "credpal-fx-trading-app",
+  "version": "1.0.0",
+  "description": "Backend Engineering Assessment - FX Trading App",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install:all": "npm install --workspaces --if-present",
+    "build:common": "wireit",
+    "build:constants": "wireit",
+    "build:runtime": "wireit",
+    "build:proto": "wireit",
+    "build": "npm-run-all build:*",
+    "build:pkgs": "npm-run-all -s -l -n \"build:proto\" \"build:constants\" \"build:common\" \"build:runtime\"",
+    "clean": "npm run clean --workspaces --if-present",
+    "dev:accounts": "wireit",
+    "dev:analytics": "wireit",
+    "dev:notifications": "wireit",
+    "dev:wallets": "wireit",
+    "dev:gateway": "wireit",
+    "dev": "npm-run-all -p -l -n \"dev:* --watch\""
+  },
+  "keywords": [
+    "credpal",
+    "fx-trading-app",
+    "backend-engineering-assessment"
+  ],
+  "author": "Olanrewaju Yusuf",
+  "license": "ISC",
+  "workspaces": [
+    "packages/*",
+    "services/*"
+  ],
+  "wireit": {
+    "build:proto": {
+      "clean": "if-file-deleted",
+      "command": "make build-proto && npm run build -w @credpal-fx-trading-app/proto",
+      "files": [
+        "protobuf/**/*.proto"
+      ]
+    },
+    "build:common": {
+      "clean": "if-file-deleted",
+      "command": "npm run build -w @credpal-fx-trading-app/common",
+      "files": [
+        "packages/common/src/**/*.ts",
+        "packages/common/tsconfig.json"
+      ],
+      "output": [
+        "packages/common/dist",
+        "packages/common/tsconfig.tsbuildinfo"
+      ],
+      "dependencies": [
+        "build:proto"
+      ]
+    },
+    "build:constants": {
+      "clean": "if-file-deleted",
+      "command": "npm run build -w @credpal-fx-trading-app/constants",
+      "files": [
+        "packages/constants/src/**/*.ts",
+        "packages/constants/tsconfig.json"
+      ],
+      "output": [
+        "packages/constants/dist",
+        "packages/constants/tsconfig.tsbuildinfo"
+      ]
+    },
+    "build:runtime": {
+      "clean": "if-file-deleted",
+      "command": "npm run build -w @credpal-fx-trading-app/runtime",
+      "files": [
+        "packages/runtime/src/**/*.ts",
+        "packages/runtime/tsconfig.json"
+      ],
+      "output": [
+        "packages/runtime/dist",
+        "packages/runtime/tsconfig.tsbuildinfo"
+      ],
+      "dependencies": [
+        "build:common"
+      ]
+    },
+    "dev:accounts": {
+      "command": "dotenv -e ./env/.env -e ./env/root.env -e ./env/accounts.env -- npm run dev -w @credpal-fx-trading-app/accounts",
+      "service": true,
+      "dependencies": [
+        "build:constants",
+        "build:common",
+        "build:runtime",
+        "build:proto"
+      ]
+    },
+    "dev:notifications": {
+      "command": "dotenv -e ./env/.env -e ./env/root.env -e ./env/notifications.env -- npm run dev -w @credpal-fx-trading-app/notifications",
+      "service": true,
+      "dependencies": [
+        "build:constants",
+        "build:common",
+        "build:runtime",
+        "build:proto"
+      ]
+    },
+    "dev:wallets": {
+      "command": "dotenv -e ./env/.env -e ./env/root.env -e ./env/wallets.env -- npm run dev -w @credpal-fx-trading-app/wallets",
+      "service": true,
+      "dependencies": [
+        "build:constants",
+        "build:common",
+        "build:runtime",
+        "build:proto"
+      ]
+    },
+    "dev:analytics": {
+      "command": "dotenv -e ./env/.env -e ./env/root.env -e ./env/analytics.env -- npm run dev -w @credpal-fx-trading-app/analytics",
+      "service": true,
+      "dependencies": [
+        "build:constants",
+        "build:common",
+        "build:runtime",
+        "build:proto"
+      ]
+    },
+    "dev:gateway": {
+      "command": "dotenv -e ./env/.env -e ./env/root.env -e ./env/gateway.env -- npm run dev -w @credpal-fx-trading-app/gateway",
+      "service": true,
+      "dependencies": [
+        "build:constants",
+        "build:common",
+        "build:runtime",
+        "build:proto"
+      ]
+    }
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.21.0",
+    "@nestjs/bullmq": "^11.0.2",
+    "@nestjs/cli": "^11.0.6",
+    "@nestjs/common": "^11.0.20",
+    "@nestjs/core": "^11.0.20",
+    "@nestjs/cqrs": "^11.0.3",
+    "@nestjs/microservices": "^11.0.20",
+    "@nestjs/platform-express": "^11.0.20",
+    "@nestjs/schematics": "^11.0.5",
+    "@nestjs/swagger": "^11.1.4",
+    "@nestjs/testing": "^11.0.20",
+    "@credpal-fx-trading-app/common": "^1.0.0",
+    "@credpal-fx-trading-app/constants": "^1.0.0",
+    "@credpal-fx-trading-app/proto": "^1.0.0",
+    "@credpal-fx-trading-app/runtime": "^1.0.0",
+    "@types/express": "^5.0.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^22.13.4",
+    "@types/supertest": "^6.0.2",
+    "@typescript-eslint/eslint-plugin": "^8.33.0",
+    "eslint": "^9.21.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-prettier": "^5.2.3",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^3.5.3",
+    "prettier-eslint": "^16.3.0",
+    "source-map-support": "^0.5.21",
+    "ts-loader": "^9.5.2",
+    "ts-node": "^10.9.2",
+    "ts-proto": "^2.6.1",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.24.1",
+    "wireit": "^0.14.11"
+  }
+}

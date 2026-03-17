@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package accounts;
+
+import "protobuf/common.proto";
+
+service AuthService {
+  rpc RegisterAccount(RegisterAccountInput) returns (OTPExpirationResponse);
+}
+
+// ------------------------------------------
+// Auths
+// ------------------------------------------
+message AuthCredentials {
+  AuthToken access_token = 1;
+  AuthToken refresh_token = 2;
+}
+
+message AuthToken {
+  string token = 1;
+  string expires_in = 2;
+}
+
+// ------------------------------------------
+// Requests
+// ------------------------------------------
+message RegisterAccountInput {
+  string email = 1;
+  string password = 2;
+}
+
+// ------------------------------------------
+// Responses
+// ------------------------------------------
+message OTPExpiration {
+  string exp_at = 1;
+}
+
+message OTPExpirationResponse {
+  oneof response {
+    OTPExpiration data = 1;
+    common.Error error = 2;
+  }
+}
+
+// ------------------------------------------
+// Data Models
+// ------------------------------------------

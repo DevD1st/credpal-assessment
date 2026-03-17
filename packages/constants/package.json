@@ -1,0 +1,22 @@
+{
+  "name": "@credpal-fx-trading-app/constants",
+  "version": "1.0.0",
+  "description": "Shared constants for Credpal FX services",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p ./tsconfig.json",
+    "clean": "rm -rf ./dist ./tsconfig.tsbuildinfo",
+    "dev": "tsc -p ./tsconfig.json --watch"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}

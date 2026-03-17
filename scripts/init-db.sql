@@ -6,9 +6,9 @@ CREATE SCHEMA IF NOT EXISTS notifications;
 CREATE SCHEMA IF NOT EXISTS wallets;
 
 -- Grant permissions
-GRANT ALL PRIVILEGES ON SCHEMA accounts TO transactease;
-GRANT ALL PRIVILEGES ON SCHEMA notifications TO transactease;
-GRANT ALL PRIVILEGES ON SCHEMA wallets TO transactease;
+GRANT ALL PRIVILEGES ON SCHEMA accounts TO credpal;
+GRANT ALL PRIVILEGES ON SCHEMA notifications TO    credpal;
+GRANT ALL PRIVILEGES ON SCHEMA wallets TO  credpal;
 
 -- Set default search path
 ALTER DATABASE credpal SET search_path TO accounts, notifications, wallets, public;

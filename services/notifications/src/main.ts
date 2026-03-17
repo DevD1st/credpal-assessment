@@ -1,0 +1,56 @@
+import { NestFactory } from "@nestjs/core";
+import { MicroserviceOptions, Transport } from "@nestjs/microservices";
+import { AppModule } from "./app.module.js";
+import { LoggingService } from "@credpal-fx-trading-app/runtime";
+import { join } from "path";
+import { getConfig } from "./utils/index.js";
+
+async function bootstrap() {
+  try {
+    const app = await NestFactory.create(AppModule);
+    const logger = app.get<LoggingService>(LoggingService);
+    app.useLogger(logger);
+
+    // Define Root - Assuming running from services/notifications, we go up 2 levels
+    const PROJECT_ROOT = join(
+      process.cwd(),
+      process.cwd().includes("services") ? "../../" : "",
+    );
+
+    app.connectMicroservice<MicroserviceOptions>({
+      transport: Transport.GRPC,
+      options: {
+        package: getConfig("service"),
+        protoPath: join(
+          process.cwd(),
+          "..",
+          "..",
+          "protobuf",
+          "notifications.proto",
+        ),
+        url: getConfig("grpc.url"),
+        loader: {
+          includeDirs: [PROJECT_ROOT],
+          json: true,
+          enums: String,
+          objects: true,
+          arrays: true,
+        },
+      },
+    });
+
+    app.enableShutdownHooks();
+    await app.startAllMicroservices();
+    await app.init();
+
+    logger.log({
+      message: "Notifications service started",
+      url: getConfig("grpc.url"),
+    });
+  } catch (error) {
+    console.error("Failed to start notifications service", error);
+    process.exit(1);
+  }
+}
+
+bootstrap();

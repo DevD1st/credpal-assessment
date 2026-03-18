@@ -10,7 +10,7 @@ import { GrpcMethod, Payload } from "@nestjs/microservices";
 import { RegisterAccountCommand, VerifyOTPCommand } from "../commands/impl.js";
 
 @Controller()
-@UseFilters(GrpcExceptionFilter)
+@UseFilters(new GrpcExceptionFilter())
 export class AuthController {
   constructor(
     private readonly commandBus: CommandBus,

@@ -1,31 +1,42 @@
-import { CommandHandler, ICommandHandler, CommandBus, QueryBus } from '@nestjs/cqrs';
-import { Inject } from '@nestjs/common';
-import { LoggingService } from '@credpal-fx-trading-app/runtime';
-import { VerifyOTPCommand } from '../impl.js';
-import { CreateUserCommand } from '../../../user/commands/impl.js';
-import { IsEmailUsedForAccountQuery } from '../../../user/queries/impl.js';
-import { GenerateAuthTokenForProfileCommand } from '../generate-token.js';
-import { 
-  ValidationError, 
-  ConflictError, 
-} from '@credpal-fx-trading-app/common';
-import { AccountVerificationCacheDto } from '@credpal-fx-trading-app/common';
-import { REDIS_KEYS, RABBITMQ_TOPICS, DUPLICATE_EMAIL, INVALID_OTP } from '@credpal-fx-trading-app/constants';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
-import { ClientProxy } from '@nestjs/microservices';
-import bcrypt from 'bcrypt';
-import { v7 as uuidv7 } from 'uuid';
-import { Accounts } from '@credpal-fx-trading-app/proto';
-import { RABBIT_MQ_CLIENT } from '../../../../utils/index.js';
-import { getConfig } from '../../../../utils/index.js';
+import {
+  CommandHandler,
+  ICommandHandler,
+  CommandBus,
+  QueryBus,
+} from "@nestjs/cqrs";
+import { Inject } from "@nestjs/common";
+import {
+  LOGGING_SERVICE_TOKEN,
+  LoggingService,
+} from "@credpal-fx-trading-app/runtime";
+import { VerifyOTPCommand } from "../impl.js";
+import { CreateUserCommand } from "../../../user/commands/impl.js";
+import { IsEmailUsedForAccountQuery } from "../../../user/queries/impl.js";
+import { GenerateAuthTokenForProfileCommand } from "../generate-token.js";
+import { ValidationError, ConflictError } from "@credpal-fx-trading-app/common";
+import { AccountVerificationCacheDto } from "@credpal-fx-trading-app/common";
+import {
+  REDIS_KEYS,
+  RABBITMQ_TOPICS,
+  DUPLICATE_EMAIL,
+  INVALID_OTP,
+} from "@credpal-fx-trading-app/constants";
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import { Cache } from "cache-manager";
+import { ClientProxy } from "@nestjs/microservices";
+import bcrypt from "bcrypt";
+import { v7 as uuidv7 } from "uuid";
+import { Accounts } from "@credpal-fx-trading-app/proto";
+import { RABBIT_MQ_CLIENT } from "../../../../utils/index.js";
+import { getConfig } from "../../../../utils/index.js";
 
 @CommandHandler(VerifyOTPCommand)
-export class VerifyOTPHandler
-  implements ICommandHandler<VerifyOTPCommand, Accounts.AuthCredentialsResponse>
-{
+export class VerifyOTPHandler implements ICommandHandler<
+  VerifyOTPCommand,
+  Accounts.AuthCredentialsResponse
+> {
   constructor(
-    private readonly logger: LoggingService,
+    @Inject(LOGGING_SERVICE_TOKEN) private readonly logger: LoggingService,
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
@@ -46,11 +57,18 @@ export class VerifyOTPHandler
       throw new ValidationError(INVALID_OTP);
     }
 
-    let isOtpValid = await bcrypt.compare(request.otp, creationReqDto.hashedOtp);
+    let isOtpValid = await bcrypt.compare(
+      request.otp,
+      creationReqDto.hashedOtp,
+    );
 
     // Allow master OTP in non-production environments for QA / dev testing.
     // We always log a warning so usage is traceable in logs.
-    if (!isOtpValid && !getConfig('isProduction') && request.otp === getConfig('masterOTP')) {
+    if (
+      !isOtpValid &&
+      !getConfig("isProduction") &&
+      request.otp === getConfig("masterOTP")
+    ) {
       this.logger.warn(
         `Master OTP used to verify account for email: ${creationReqDto.email} — IP: ${creationReqDto.ipAddress}`,
       );
@@ -77,7 +95,7 @@ export class VerifyOTPHandler
       ),
     );
 
-    if (!profile) throw new Error('Could not create profile');
+    if (!profile) throw new Error("Could not create profile");
 
     const auth = await this.commandBus.execute(
       new GenerateAuthTokenForProfileCommand(profile, meta),

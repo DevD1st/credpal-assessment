@@ -23,7 +23,7 @@ const PROJECT_ROOT = join(
         options: {
           package: "accounts",
           protoPath: join(process.cwd(), "..", "..", "protobuf/accounts.proto"),
-          url: process.env.ACCOUNTS_SERVICE_URL || "localhost:50051",
+          url: process.env.ACCOUNTS_SERVICE_URL || "accounts:50051",
           loader: {
             includeDirs: [PROJECT_ROOT],
             json: true,

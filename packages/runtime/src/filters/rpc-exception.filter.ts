@@ -1,11 +1,25 @@
 import { Catch, RpcExceptionFilter, ArgumentsHost } from "@nestjs/common";
-import { BaseError } from "@credpal-fx-trading-app/common";
-import { Observable, of, throwError } from "rxjs";
-import { LoggingService } from "../services/logging.service.js";
+import {
+  BaseError,
+  getDefaultLoggerOpts,
+  getLogger,
+  Logger,
+} from "@credpal-fx-trading-app/common";
+import { Observable, of } from "rxjs";
 
 @Catch()
 export class GrpcExceptionFilter implements RpcExceptionFilter {
-  constructor(private readonly logger: LoggingService) {}
+  private logger: Logger;
+
+  constructor() {
+    this.logger = getLogger(
+      getDefaultLoggerOpts((key) =>
+        key === "environment"
+          ? process.env.ENVIRONMENT || "development"
+          : "GrpcExceptionFilter",
+      ),
+    );
+  }
 
   catch(exception: any, host: ArgumentsHost): Observable<any> {
     let errorBody;

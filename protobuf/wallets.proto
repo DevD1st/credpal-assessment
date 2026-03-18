@@ -5,5 +5,74 @@ package wallets;
 import "protobuf/common.proto";
 
 service WalletsService {
-  rpc Dummy(common.Empty) returns (common.EmptyResponse);
+  rpc CreateWallet(CreateWalletInput) returns (CreateWalletResponse);
+  rpc GetWallets(GetWalletsInput) returns (GetWalletsResponse);
+  rpc FundWallet(FundWalletInput) returns (FundWalletResponse);
+}
+
+// ------------------------------------------
+// Auths
+// ------------------------------------------
+
+// ------------------------------------------
+// Requests
+// ------------------------------------------
+message CreateWalletInput {
+  string currency = 1;
+}
+
+message GetWalletsInput {
+  optional string currency = 1;
+  optional string status = 2;
+  optional int32 offset = 3;
+  optional int32 limit = 4;
+}
+
+message FundWalletInput {
+  string wallet_id = 1;
+  // expected to be in lowest currency unit
+  int64 amount = 2;
+  string idempotency_key = 3;
+}
+
+// ------------------------------------------
+// Responses
+// ------------------------------------------
+message GetWalletsResponse {
+  oneof response {
+    Wallets data = 1;
+    common.Error error = 2;
+  }
+}
+
+message CreateWalletResponse {
+  oneof response {
+    Wallet data = 1;
+    common.Error error = 2;
+  }
+}
+
+message FundWalletResponse {
+  oneof response {
+    Wallet data = 1;
+    common.Error error = 2;
+  }
+}
+
+message Wallets {
+  repeated Wallet wallets = 1;
+  int32 total = 2;
+}
+
+// ------------------------------------------
+// Data Models
+// ------------------------------------------
+message Wallet {
+  string id = 1;
+  string user_id = 2;
+  string currency = 3;
+  int64 balance = 4;
+  string status = 5;
+  string created_at = 6;
+  string updated_at = 7;
 }

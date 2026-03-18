@@ -5,6 +5,7 @@ import { getDefaultLoggerOpts } from "@credpal-fx-trading-app/common";
 import { getConfig } from "./utils/index.js";
 import { CacheModule } from "@nestjs/cache-manager";
 import KeyvRedis, { RedisClientOptions } from "@keyv/redis";
+import { AuthModule } from "./modules/auth/auth.module.js";
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import KeyvRedis, { RedisClientOptions } from "@keyv/redis";
         };
       },
     }),
+    AuthModule,
   ],
 })
 export class AppModule {}

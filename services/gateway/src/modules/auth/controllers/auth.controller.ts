@@ -14,7 +14,7 @@ import {
 } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { ClientGrpc } from "@nestjs/microservices";
-import { IRPCAuthService, RPC_ACCOUNTS_SERVICE } from "src/utils/index.js";
+import { IRPCAuthService, RPC_ACCOUNTS_SERVICE } from "../../../utils/index.js";
 import { RegisterIndividualDto } from "../dto/register-individual.dto.js";
 import { OTPExpirationDto } from "../dto/otp-expiration.dto.js";
 import { VerifyOTPDto } from "../dto/verify-otp.dto.js";

@@ -81,7 +81,7 @@ services:
           "--authenticationDatabase", "admin",
           "--eval", "db.adminCommand('ping')"
         ]
-      interval: 10s
+      interval: 60s
       timeout: 5s
       retries: 5
 

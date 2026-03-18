@@ -4,18 +4,30 @@ import {
   ArgumentsHost,
   HttpException,
   HttpStatus,
+  Inject,
 } from "@nestjs/common";
 import { HttpAdapterHost } from "@nestjs/core";
-import { BaseError } from "@credpal-fx-trading-app/common";
-import { LoggingService } from "../services/logging.service.js";
+import {
+  BaseError,
+  getDefaultLoggerOpts,
+  getLogger,
+  Logger,
+} from "@credpal-fx-trading-app/common";
 import { Common } from "@credpal-fx-trading-app/proto";
 
 @Catch()
 export class GlobalExceptionsFilter implements ExceptionFilter {
-  constructor(
-    private readonly httpAdapterHost: HttpAdapterHost,
-    private readonly logger: LoggingService,
-  ) {}
+  private logger: Logger;
+
+  constructor(private readonly httpAdapterHost: HttpAdapterHost) {
+    this.logger = getLogger(
+      getDefaultLoggerOpts((key) =>
+        key === "environment"
+          ? process.env.ENVIRONMENT || "development"
+          : "GrpcExceptionFilter",
+      ),
+    );
+  }
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const { httpAdapter } = this.httpAdapterHost;

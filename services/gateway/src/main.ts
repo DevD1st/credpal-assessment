@@ -31,7 +31,7 @@ async function bootstrap() {
 
   app.use(RequestIdMiddleware);
   const httpAdapter = app.get(HttpAdapterHost);
-  app.useGlobalFilters(new GlobalExceptionsFilter(httpAdapter, logger));
+  app.useGlobalFilters(new GlobalExceptionsFilter(httpAdapter));
 
   const config = new DocumentBuilder()
     .setTitle("CredPal API Gateway")

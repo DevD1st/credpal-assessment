@@ -17,7 +17,7 @@ import {
   type ServiceError,
   type UntypedServiceImplementation,
 } from "@grpc/grpc-js";
-import { Empty, EmptyResponse } from "./common";
+import { Empty, EmptyResponse } from "./common.js";
 
 export const protobufPackage = "analytics";
 

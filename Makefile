@@ -17,10 +17,16 @@ build-proto:
 	@protoc \
 		--plugin=$(PROTOC_PLUGIN) \
 		--ts_proto_out=$(PROTO_OUT_DIR) \
+		--ts_proto_opt=importSuffix=.js \
 		--ts_proto_opt=esModuleInterop=true \
 		--ts_proto_opt=outputServices=grpc-js \
 		--ts_proto_opt=env=node \
 		--ts_proto_opt=useOptionals=messages \
+		--ts_proto_opt=useDate=true \
+		--ts_proto_opt=removeEnumPrefix=true \
+		--ts_proto_opt=stringEnums=true \
+		--ts_proto_opt=useExactTypes=false \
+		--ts_proto_opt=oneof=properties \
 		--proto_path=. \
 		$(PROTO_DIR)/*.proto
 	@echo "Protocol buffers built successfully"

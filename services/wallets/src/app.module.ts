@@ -39,7 +39,9 @@ const __dirname = path.dirname(__filename);
           database,
           synchronize: true,
           entities: [path.join(__dirname, "..", "**", "*.entity{.ts,.js}")],
-          migrations: [path.join(__dirname, "database", "migrations", "*{.ts,.js}")],
+          migrations: [
+            path.join(__dirname, "database", "migrations", "*{.ts,.js}"),
+          ],
           migrationsRun: false,
           autoLoadEntities: true,
           ssl:

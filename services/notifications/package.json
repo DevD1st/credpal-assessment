@@ -47,7 +47,8 @@
     "amqp-connection-manager": "^5.0.0",
     "amqplib": "^0.10.9",
     "pg": "^8.20.0",
-    "typeorm": "^0.3.28"
+    "typeorm": "^0.3.28",
+    "uuid": "^11.1.0"
   },
   "jest": {
     "moduleFileExtensions": [

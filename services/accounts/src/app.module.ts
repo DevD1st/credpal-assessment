@@ -9,6 +9,8 @@ import KeyvRedis, { RedisClientOptions } from "@keyv/redis";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import path from "path";
 import { fileURLToPath } from "url";
+import { AuthModule } from "./modules/auth/auth.module.js";
+import { UserModule } from "./modules/user/user.module.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -68,7 +70,9 @@ const __dirname = path.dirname(__filename);
           database,
           synchronize: true,
           entities: [path.join(__dirname, "..", "**", "*.entity{.ts,.js}")],
-          migrations: [path.join(__dirname, "database", "migrations", "*{.ts,.js}")],
+          migrations: [
+            path.join(__dirname, "database", "migrations", "*{.ts,.js}"),
+          ],
           migrationsRun: false,
           autoLoadEntities: true,
           ssl:
@@ -83,6 +87,8 @@ const __dirname = path.dirname(__filename);
     LoggingModule.register({
       ...getDefaultLoggerOpts(getConfig),
     }),
+    AuthModule,
+    UserModule,
   ],
   controllers: [],
   providers: [],

@@ -7,6 +7,9 @@ import { ConfigModule } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import path from "path";
 import { fileURLToPath } from "url";
+import { WalletModule } from "./modules/wallet/wallet.module.js";
+import { TransactionModule } from "./modules/transaction/transaction.module.js";
+import { FxModule } from "./modules/fx/fx.module.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -51,6 +54,9 @@ const __dirname = path.dirname(__filename);
     LoggingModule.register({
       ...getDefaultLoggerOpts(getConfig),
     }),
+    WalletModule,
+    TransactionModule,
+    FxModule,
   ],
   controllers: [],
   providers: [],

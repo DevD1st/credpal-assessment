@@ -5,6 +5,7 @@ import { getDefaultLoggerOpts } from "@credpal-fx-trading-app/common";
 import { getConfig } from "./utils/index.js";
 import { ConfigModule } from "@nestjs/config";
 import { MongooseModule } from "@nestjs/mongoose";
+import { AnalyticsModule } from "./modules/analytics/analytics.module.js";
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { MongooseModule } from "@nestjs/mongoose";
     LoggingModule.register({
       ...getDefaultLoggerOpts(getConfig),
     }),
+    AnalyticsModule,
   ],
   controllers: [],
   providers: [],

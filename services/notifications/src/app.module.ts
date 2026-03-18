@@ -4,6 +4,7 @@ import { LoggingModule } from "@credpal-fx-trading-app/runtime";
 import { getDefaultLoggerOpts } from "@credpal-fx-trading-app/common";
 import { getConfig } from "./utils/index.js";
 import { ConfigModule } from "@nestjs/config";
+import { NotificationModule } from "./modules/notification/notification.module.js";
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { ConfigModule } from "@nestjs/config";
     LoggingModule.register({
       ...getDefaultLoggerOpts(getConfig),
     }),
+    NotificationModule,
   ],
   controllers: [],
   providers: [],

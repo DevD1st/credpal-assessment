@@ -9,4 +9,4 @@ const QueryHandlers: [] = [];
   providers: [...CommandHandlers, ...QueryHandlers],
   controllers: [],
 })
-export class AuthModule {}
+export class UserModule {}

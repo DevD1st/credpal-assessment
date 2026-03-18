@@ -38,4 +38,33 @@ export class WalletRepository extends Repository<Wallet> implements IWalletRepos
   async findById(id: string): Promise<Wallet | null> {
     return this.findOne({ where: { id } });
   }
+
+  async getWallets(
+    userId: string,
+    filters: {
+      currency?: string;
+      status?: string;
+      offset?: number;
+      limit?: number;
+    },
+  ): Promise<{ wallets: Wallet[]; total: number }> {
+    const qb = this.createQueryBuilder('wallet');
+    qb.where('wallet.user_id = :userId', { userId });
+
+    if (filters.currency) {
+      qb.andWhere('wallet.currency = :currency', { currency: filters.currency.toUpperCase() });
+    }
+
+    if (filters.status) {
+      qb.andWhere('wallet.status = :status', { status: filters.status });
+    }
+
+    const limit = filters.limit && filters.limit > 0 ? filters.limit : 10;
+    const offset = filters.offset && filters.offset >= 0 ? filters.offset : 0;
+
+    qb.skip(offset).take(limit).orderBy('wallet.created_at', 'DESC');
+
+    const [wallets, total] = await qb.getManyAndCount();
+    return { wallets, total };
+  }
 }

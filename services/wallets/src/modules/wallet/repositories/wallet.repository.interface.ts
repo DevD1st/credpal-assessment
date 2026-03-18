@@ -5,4 +5,13 @@ export const WALLET_REPOSITORY_TOKEN = 'WALLET_REPOSITORY_TOKEN';
 export interface IWalletRepository {
   createWallet(wallet: Partial<Wallet>): Promise<Wallet>;
   findById(id: string): Promise<Wallet | null>;
+  getWallets(
+    userId: string,
+    filters: {
+      currency?: string;
+      status?: string;
+      offset?: number;
+      limit?: number;
+    },
+  ): Promise<{ wallets: Wallet[]; total: number }>;
 }

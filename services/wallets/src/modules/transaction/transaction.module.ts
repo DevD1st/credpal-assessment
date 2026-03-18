@@ -7,12 +7,14 @@ import { LedgerRepository } from "./repositories/ledger.repository.js";
 import { LEDGER_REPOSITORY_TOKEN } from "./repositories/ledger.repository.interface.js";
 import { ProcessFundWalletHandler } from "./commands/handlers/process-fund-wallet.handler.js";
 import { ProcessTradeCurrencyHandler } from "./commands/handlers/process-trade-currency.handler.js";
+import { GetTransactionsHandler } from "./queries/handlers/get-transactions.handler.js";
 import { TransactionWorker } from "./services/transaction.worker.js";
 import { RABBIT_MQ_CLIENT } from "../../utils/index.js";
 import { getConfig } from "../../utils/index.js";
+import { TransactionController } from "./controllers/transaction.controller.js";
 
 const CommandHandlers = [ProcessFundWalletHandler, ProcessTradeCurrencyHandler];
-const QueryHandlers: any[] = [];
+const QueryHandlers = [GetTransactionsHandler];
 
 @Module({
   imports: [
@@ -50,7 +52,7 @@ const QueryHandlers: any[] = [];
       useClass: LedgerRepository,
     },
   ],
-  controllers: [],
+  controllers: [TransactionController],
   exports: [TRANSACTION_REPOSITORY_TOKEN, LEDGER_REPOSITORY_TOKEN],
 })
 export class TransactionModule {}

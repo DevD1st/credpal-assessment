@@ -47,6 +47,11 @@ export interface RegisterAccountInput {
   password: string;
 }
 
+export interface VerifyOTPInput {
+  email: string;
+  otp: string;
+}
+
 /**
  * ------------------------------------------
  * Responses
@@ -58,6 +63,11 @@ export interface OTPExpiration {
 
 export interface OTPExpirationResponse {
   data?: OTPExpiration | undefined;
+  error?: Error | undefined;
+}
+
+export interface AuthCredentialsResponse {
+  data?: AuthCredentials | undefined;
   error?: Error | undefined;
 }
 
@@ -305,6 +315,82 @@ export const RegisterAccountInput: MessageFns<RegisterAccountInput> = {
   },
 };
 
+function createBaseVerifyOTPInput(): VerifyOTPInput {
+  return { email: "", otp: "" };
+}
+
+export const VerifyOTPInput: MessageFns<VerifyOTPInput> = {
+  encode(message: VerifyOTPInput, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.email !== "") {
+      writer.uint32(10).string(message.email);
+    }
+    if (message.otp !== "") {
+      writer.uint32(18).string(message.otp);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): VerifyOTPInput {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseVerifyOTPInput();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.email = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.otp = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): VerifyOTPInput {
+    return {
+      email: isSet(object.email) ? globalThis.String(object.email) : "",
+      otp: isSet(object.otp) ? globalThis.String(object.otp) : "",
+    };
+  },
+
+  toJSON(message: VerifyOTPInput): unknown {
+    const obj: any = {};
+    if (message.email !== "") {
+      obj.email = message.email;
+    }
+    if (message.otp !== "") {
+      obj.otp = message.otp;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<VerifyOTPInput>, I>>(base?: I): VerifyOTPInput {
+    return VerifyOTPInput.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<VerifyOTPInput>, I>>(object: I): VerifyOTPInput {
+    const message = createBaseVerifyOTPInput();
+    message.email = object.email ?? "";
+    message.otp = object.otp ?? "";
+    return message;
+  },
+};
+
 function createBaseOTPExpiration(): OTPExpiration {
   return { expAt: "" };
 }
@@ -447,6 +533,84 @@ export const OTPExpirationResponse: MessageFns<OTPExpirationResponse> = {
   },
 };
 
+function createBaseAuthCredentialsResponse(): AuthCredentialsResponse {
+  return { data: undefined, error: undefined };
+}
+
+export const AuthCredentialsResponse: MessageFns<AuthCredentialsResponse> = {
+  encode(message: AuthCredentialsResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.data !== undefined) {
+      AuthCredentials.encode(message.data, writer.uint32(10).fork()).join();
+    }
+    if (message.error !== undefined) {
+      Error.encode(message.error, writer.uint32(18).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): AuthCredentialsResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseAuthCredentialsResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.data = AuthCredentials.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.error = Error.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): AuthCredentialsResponse {
+    return {
+      data: isSet(object.data) ? AuthCredentials.fromJSON(object.data) : undefined,
+      error: isSet(object.error) ? Error.fromJSON(object.error) : undefined,
+    };
+  },
+
+  toJSON(message: AuthCredentialsResponse): unknown {
+    const obj: any = {};
+    if (message.data !== undefined) {
+      obj.data = AuthCredentials.toJSON(message.data);
+    }
+    if (message.error !== undefined) {
+      obj.error = Error.toJSON(message.error);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<AuthCredentialsResponse>, I>>(base?: I): AuthCredentialsResponse {
+    return AuthCredentialsResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<AuthCredentialsResponse>, I>>(object: I): AuthCredentialsResponse {
+    const message = createBaseAuthCredentialsResponse();
+    message.data = (object.data !== undefined && object.data !== null)
+      ? AuthCredentials.fromPartial(object.data)
+      : undefined;
+    message.error = (object.error !== undefined && object.error !== null) ? Error.fromPartial(object.error) : undefined;
+    return message;
+  },
+};
+
 export type AuthServiceService = typeof AuthServiceService;
 export const AuthServiceService = {
   registerAccount: {
@@ -459,10 +623,21 @@ export const AuthServiceService = {
       Buffer.from(OTPExpirationResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer): OTPExpirationResponse => OTPExpirationResponse.decode(value),
   },
+  verifyOtp: {
+    path: "/accounts.AuthService/VerifyOTP" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: VerifyOTPInput): Buffer => Buffer.from(VerifyOTPInput.encode(value).finish()),
+    requestDeserialize: (value: Buffer): VerifyOTPInput => VerifyOTPInput.decode(value),
+    responseSerialize: (value: AuthCredentialsResponse): Buffer =>
+      Buffer.from(AuthCredentialsResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): AuthCredentialsResponse => AuthCredentialsResponse.decode(value),
+  },
 } as const;
 
 export interface AuthServiceServer extends UntypedServiceImplementation {
   registerAccount: handleUnaryCall<RegisterAccountInput, OTPExpirationResponse>;
+  verifyOtp: handleUnaryCall<VerifyOTPInput, AuthCredentialsResponse>;
 }
 
 export interface AuthServiceClient extends Client {
@@ -480,6 +655,21 @@ export interface AuthServiceClient extends Client {
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: OTPExpirationResponse) => void,
+  ): ClientUnaryCall;
+  verifyOtp(
+    request: VerifyOTPInput,
+    callback: (error: ServiceError | null, response: AuthCredentialsResponse) => void,
+  ): ClientUnaryCall;
+  verifyOtp(
+    request: VerifyOTPInput,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: AuthCredentialsResponse) => void,
+  ): ClientUnaryCall;
+  verifyOtp(
+    request: VerifyOTPInput,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: AuthCredentialsResponse) => void,
   ): ClientUnaryCall;
 }
 

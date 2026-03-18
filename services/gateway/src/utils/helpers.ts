@@ -20,6 +20,11 @@ export const getConfig = (key: string) => {
         port: parseInt(process.env.REDIS_PORT || "6379"),
       },
     },
+    rabbitmq: {
+      url: process.env.RABBITMQ_URL || "amqp://credpal:credpal@localhost:5672",
+      exchange: process.env.RABBITMQ_EXCHANGE || "credpal_events",
+      queue: process.env.SERVICE || "gateway",
+    },
   };
   return key.split(".").reduce((obj, k) => obj?.[k], config as any);
 };

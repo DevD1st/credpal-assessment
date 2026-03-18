@@ -6,6 +6,7 @@ import "protobuf/common.proto";
 
 service AuthService {
   rpc RegisterAccount(RegisterAccountInput) returns (OTPExpirationResponse);
+  rpc VerifyOTP(VerifyOTPInput) returns (AuthCredentialsResponse);
 }
 
 // ------------------------------------------
@@ -29,6 +30,11 @@ message RegisterAccountInput {
   string password = 2;
 }
 
+message VerifyOTPInput {
+  string email = 1;
+  string otp = 2;
+}
+
 // ------------------------------------------
 // Responses
 // ------------------------------------------
@@ -39,6 +45,13 @@ message OTPExpiration {
 message OTPExpirationResponse {
   oneof response {
     OTPExpiration data = 1;
+    common.Error error = 2;
+  }
+}
+
+message AuthCredentialsResponse {
+  oneof response {
+    AuthCredentials data = 1;
     common.Error error = 2;
   }
 }

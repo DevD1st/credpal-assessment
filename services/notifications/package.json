@@ -29,6 +29,7 @@
     "@credpal-fx-trading-app/constants": "^1.0.0",
     "@credpal-fx-trading-app/proto": "^1.0.0",
     "@credpal-fx-trading-app/runtime": "^1.0.0",
+    "@drdgvhbh/postgres-error-codes": "^0.0.6",
     "@grpc/grpc-js": "^1.12.6",
     "@grpc/proto-loader": "^0.7.13",
     "@grpc/reflection": "^1.0.4",

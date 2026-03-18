@@ -1,7 +1,7 @@
 import { Catch, RpcExceptionFilter, ArgumentsHost } from "@nestjs/common";
 import { BaseError } from "@credpal-fx-trading-app/common";
 import { Observable, of, throwError } from "rxjs";
-import { LoggingService } from "../services/logging.service";
+import { LoggingService } from "../services/logging.service.js";
 
 @Catch()
 export class GrpcExceptionFilter implements RpcExceptionFilter {

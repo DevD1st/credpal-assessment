@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package analytics;
+
+import "protobuf/common.proto";
+
+service AnalyticsService {
+  rpc Dummy(common.Empty) returns (common.EmptyResponse);
+}

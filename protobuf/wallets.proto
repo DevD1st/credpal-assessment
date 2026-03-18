@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package wallets;
+
+import "protobuf/common.proto";
+
+service WalletsService {
+  rpc Dummy(common.Empty) returns (common.EmptyResponse);
+}

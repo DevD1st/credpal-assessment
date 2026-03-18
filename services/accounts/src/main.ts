@@ -1,14 +1,17 @@
 import { NestFactory } from "@nestjs/core";
 import { MicroserviceOptions, Transport } from "@nestjs/microservices";
 import { AppModule } from "./app.module.js";
-import { LoggingService } from "@credpal-fx-trading-app/runtime";
+import {
+  LOGGING_SERVICE_TOKEN,
+  LoggingService,
+} from "@credpal-fx-trading-app/runtime";
 import { join } from "path";
 import { getConfig } from "./utils/index.js";
 
 async function bootstrap() {
   try {
     const app = await NestFactory.create(AppModule);
-    const logger = app.get<LoggingService>(LoggingService);
+    const logger = app.get<LoggingService>(LOGGING_SERVICE_TOKEN);
     app.useLogger(logger);
 
     // Define Root - Assuming running from services/accounts, we go up 2 levels

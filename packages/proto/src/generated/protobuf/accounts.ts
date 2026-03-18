@@ -6,7 +6,19 @@
 
 /* eslint-disable */
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
-import { Error } from "./common.js";
+import {
+  type CallOptions,
+  type ChannelCredentials,
+  Client,
+  type ClientOptions,
+  type ClientUnaryCall,
+  type handleUnaryCall,
+  makeGenericClientConstructor,
+  type Metadata,
+  type ServiceError,
+  type UntypedServiceImplementation,
+} from "@grpc/grpc-js";
+import { Error } from "./common";
 
 export const protobufPackage = "accounts";
 
@@ -16,8 +28,8 @@ export const protobufPackage = "accounts";
  * ------------------------------------------
  */
 export interface AuthCredentials {
-  accessToken: AuthToken | undefined;
-  refreshToken: AuthToken | undefined;
+  accessToken?: AuthToken | undefined;
+  refreshToken?: AuthToken | undefined;
 }
 
 export interface AuthToken {
@@ -122,10 +134,10 @@ export const AuthCredentials: MessageFns<AuthCredentials> = {
     return obj;
   },
 
-  create(base?: DeepPartial<AuthCredentials>): AuthCredentials {
-    return AuthCredentials.fromPartial(base ?? {});
+  create<I extends Exact<DeepPartial<AuthCredentials>, I>>(base?: I): AuthCredentials {
+    return AuthCredentials.fromPartial(base ?? ({} as any));
   },
-  fromPartial(object: DeepPartial<AuthCredentials>): AuthCredentials {
+  fromPartial<I extends Exact<DeepPartial<AuthCredentials>, I>>(object: I): AuthCredentials {
     const message = createBaseAuthCredentials();
     message.accessToken = (object.accessToken !== undefined && object.accessToken !== null)
       ? AuthToken.fromPartial(object.accessToken)
@@ -206,10 +218,10 @@ export const AuthToken: MessageFns<AuthToken> = {
     return obj;
   },
 
-  create(base?: DeepPartial<AuthToken>): AuthToken {
-    return AuthToken.fromPartial(base ?? {});
+  create<I extends Exact<DeepPartial<AuthToken>, I>>(base?: I): AuthToken {
+    return AuthToken.fromPartial(base ?? ({} as any));
   },
-  fromPartial(object: DeepPartial<AuthToken>): AuthToken {
+  fromPartial<I extends Exact<DeepPartial<AuthToken>, I>>(object: I): AuthToken {
     const message = createBaseAuthToken();
     message.token = object.token ?? "";
     message.expiresIn = object.expiresIn ?? "";
@@ -282,10 +294,10 @@ export const RegisterAccountInput: MessageFns<RegisterAccountInput> = {
     return obj;
   },
 
-  create(base?: DeepPartial<RegisterAccountInput>): RegisterAccountInput {
-    return RegisterAccountInput.fromPartial(base ?? {});
+  create<I extends Exact<DeepPartial<RegisterAccountInput>, I>>(base?: I): RegisterAccountInput {
+    return RegisterAccountInput.fromPartial(base ?? ({} as any));
   },
-  fromPartial(object: DeepPartial<RegisterAccountInput>): RegisterAccountInput {
+  fromPartial<I extends Exact<DeepPartial<RegisterAccountInput>, I>>(object: I): RegisterAccountInput {
     const message = createBaseRegisterAccountInput();
     message.email = object.email ?? "";
     message.password = object.password ?? "";
@@ -347,10 +359,10 @@ export const OTPExpiration: MessageFns<OTPExpiration> = {
     return obj;
   },
 
-  create(base?: DeepPartial<OTPExpiration>): OTPExpiration {
-    return OTPExpiration.fromPartial(base ?? {});
+  create<I extends Exact<DeepPartial<OTPExpiration>, I>>(base?: I): OTPExpiration {
+    return OTPExpiration.fromPartial(base ?? ({} as any));
   },
-  fromPartial(object: DeepPartial<OTPExpiration>): OTPExpiration {
+  fromPartial<I extends Exact<DeepPartial<OTPExpiration>, I>>(object: I): OTPExpiration {
     const message = createBaseOTPExpiration();
     message.expAt = object.expAt ?? "";
     return message;
@@ -422,10 +434,10 @@ export const OTPExpirationResponse: MessageFns<OTPExpirationResponse> = {
     return obj;
   },
 
-  create(base?: DeepPartial<OTPExpirationResponse>): OTPExpirationResponse {
-    return OTPExpirationResponse.fromPartial(base ?? {});
+  create<I extends Exact<DeepPartial<OTPExpirationResponse>, I>>(base?: I): OTPExpirationResponse {
+    return OTPExpirationResponse.fromPartial(base ?? ({} as any));
   },
-  fromPartial(object: DeepPartial<OTPExpirationResponse>): OTPExpirationResponse {
+  fromPartial<I extends Exact<DeepPartial<OTPExpirationResponse>, I>>(object: I): OTPExpirationResponse {
     const message = createBaseOTPExpirationResponse();
     message.data = (object.data !== undefined && object.data !== null)
       ? OTPExpiration.fromPartial(object.data)
@@ -435,21 +447,50 @@ export const OTPExpirationResponse: MessageFns<OTPExpirationResponse> = {
   },
 };
 
-export type AuthServiceDefinition = typeof AuthServiceDefinition;
-export const AuthServiceDefinition = {
-  name: "AuthService",
-  fullName: "accounts.AuthService",
-  methods: {
-    registerAccount: {
-      name: "RegisterAccount",
-      requestType: RegisterAccountInput as typeof RegisterAccountInput,
-      requestStream: false,
-      responseType: OTPExpirationResponse as typeof OTPExpirationResponse,
-      responseStream: false,
-      options: {},
-    },
+export type AuthServiceService = typeof AuthServiceService;
+export const AuthServiceService = {
+  registerAccount: {
+    path: "/accounts.AuthService/RegisterAccount" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: RegisterAccountInput): Buffer => Buffer.from(RegisterAccountInput.encode(value).finish()),
+    requestDeserialize: (value: Buffer): RegisterAccountInput => RegisterAccountInput.decode(value),
+    responseSerialize: (value: OTPExpirationResponse): Buffer =>
+      Buffer.from(OTPExpirationResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): OTPExpirationResponse => OTPExpirationResponse.decode(value),
   },
 } as const;
+
+export interface AuthServiceServer extends UntypedServiceImplementation {
+  registerAccount: handleUnaryCall<RegisterAccountInput, OTPExpirationResponse>;
+}
+
+export interface AuthServiceClient extends Client {
+  registerAccount(
+    request: RegisterAccountInput,
+    callback: (error: ServiceError | null, response: OTPExpirationResponse) => void,
+  ): ClientUnaryCall;
+  registerAccount(
+    request: RegisterAccountInput,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: OTPExpirationResponse) => void,
+  ): ClientUnaryCall;
+  registerAccount(
+    request: RegisterAccountInput,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: OTPExpirationResponse) => void,
+  ): ClientUnaryCall;
+}
+
+export const AuthServiceClient = makeGenericClientConstructor(
+  AuthServiceService,
+  "accounts.AuthService",
+) as unknown as {
+  new (address: string, credentials: ChannelCredentials, options?: Partial<ClientOptions>): AuthServiceClient;
+  service: typeof AuthServiceService;
+  serviceName: string;
+};
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
@@ -458,6 +499,10 @@ export type DeepPartial<T> = T extends Builtin ? T
   : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
   : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
+
+type KeysOfUnion<T> = T extends T ? keyof T : never;
+export type Exact<P, I extends P> = P extends Builtin ? P
+  : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
 
 function isSet(value: any): boolean {
   return value !== null && value !== undefined;
@@ -468,6 +513,6 @@ export interface MessageFns<T> {
   decode(input: BinaryReader | Uint8Array, length?: number): T;
   fromJSON(object: any): T;
   toJSON(message: T): unknown;
-  create(base?: DeepPartial<T>): T;
-  fromPartial(object: DeepPartial<T>): T;
+  create<I extends Exact<DeepPartial<T>, I>>(base?: I): T;
+  fromPartial<I extends Exact<DeepPartial<T>, I>>(object: I): T;
 }

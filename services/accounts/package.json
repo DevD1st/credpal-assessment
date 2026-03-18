@@ -11,15 +11,18 @@
     "build": "nest build --builder tsc",
     "clean": "rm -rf ./dist ./tsconfig.tsbuildinfo",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "cross-env NODE_OPTIONS=\"--import=../../scripts/instrumentation.js\" nest start accounts",
-    "dev": "cross-env NODE_OPTIONS=\"--import=../../scripts/instrumentation.js\" nest start accounts --watch --builder tsc",
+    "start": "cross-env NODE_OPTIONS=\"--import=../../scripts/instrumentation.mjs\" nest start accounts",
+    "dev": "cross-env NODE_OPTIONS=\"--import=../../scripts/instrumentation.mjs\" nest start accounts --watch --builder tsc",
     "debug": "nest start accounts --debug --watch",
     "prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "migration:generate": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:generate -d ./src/database/ormconfig.ts",
+    "migration:run": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d ./src/database/ormconfig.ts",
+    "migration:revert": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:revert -d ./src/database/ormconfig.ts"
   },
   "dependencies": {
     "@credpal-fx-trading-app/common": "^1.0.0",
@@ -29,6 +32,8 @@
     "@grpc/grpc-js": "^1.12.6",
     "@grpc/proto-loader": "^0.7.13",
     "@grpc/reflection": "^1.0.4",
+    "@keyv/redis": "^5.1.6",
+    "@nestjs/cache-manager": "^3.1.0",
     "@nestjs/common": "^11.0.20",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.20",
@@ -36,10 +41,14 @@
     "@nestjs/mapped-types": "^2.1.0",
     "@nestjs/microservices": "^11.0.20",
     "@nestjs/platform-express": "^11.0.20",
+    "@nestjs/typeorm": "^11.0.0",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/auto-instrumentations-node": "^0.71.0",
     "@opentelemetry/sdk-node": "^0.213.0",
-    "@opentelemetry/sdk-trace-node": "^2.6.0"
+    "@opentelemetry/sdk-trace-node": "^2.6.0",
+    "cache-manager": "^7.2.8",
+    "pg": "^8.20.0",
+    "typeorm": "^0.3.28"
   },
   "jest": {
     "moduleFileExtensions": [

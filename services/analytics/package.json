@@ -11,8 +11,8 @@
     "build": "nest build --builder tsc",
     "clean": "rm -rf ./dist ./tsconfig.tsbuildinfo",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "cross-env NODE_OPTIONS=\"--import=../../scripts/instrumentation.js\" nest start analytics",
-    "dev": "cross-env NODE_OPTIONS=\"--import=../../scripts/instrumentation.js\" nest start analytics --watch --builder tsc",
+    "start": "cross-env NODE_OPTIONS=\"--import=../../scripts/instrumentation.mjs\" nest start analytics",
+    "dev": "cross-env NODE_OPTIONS=\"--import=../../scripts/instrumentation.mjs\" nest start analytics --watch --builder tsc",
     "debug": "nest start analytics --debug --watch",
     "prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
@@ -35,11 +35,13 @@
     "@nestjs/cqrs": "^11.0.3",
     "@nestjs/mapped-types": "^2.1.0",
     "@nestjs/microservices": "^11.0.20",
+    "@nestjs/mongoose": "^11.0.4",
     "@nestjs/platform-express": "^11.0.20",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/auto-instrumentations-node": "^0.71.0",
     "@opentelemetry/sdk-node": "^0.213.0",
-    "@opentelemetry/sdk-trace-node": "^2.6.0"
+    "@opentelemetry/sdk-trace-node": "^2.6.0",
+    "mongoose": "^9.3.1"
   },
   "jest": {
     "moduleFileExtensions": [

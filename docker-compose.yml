@@ -1,0 +1,289 @@
+name: credpal-fx
+
+# ─────────────────────────────────────────────────────────────
+#  Infrastructure services
+# ─────────────────────────────────────────────────────────────
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: credpal
+      POSTGRES_USER: credpal
+      POSTGRES_PASSWORD: credpal
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - credpal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U credpal -d credpal"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - credpal
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbit:
+    image: rabbitmq:4.2
+    restart: "unless-stopped"
+    volumes:
+      - rabbit_data:/var/lib/rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: credpal
+      RABBITMQ_DEFAULT_PASS: credpal
+    ports:
+      - 8081:15672 # rabbit management port
+    networks:
+      - credpal
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_running"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+  mongodb:
+    image: mongo:7
+    restart: unless-stopped
+    command: ["--quiet"]
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: credpal
+      MONGO_INITDB_ROOT_PASSWORD: credpal
+      MONGO_INITDB_DATABASE: analytics
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - credpal
+    healthcheck:
+      test: [
+          "CMD", 
+          "mongosh", 
+          "-u", "credpal", 
+          "-p", "credpal", 
+          "--authenticationDatabase", "admin",
+          "--eval", "db.adminCommand('ping')"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  adminer:
+    image: adminer:latest
+    restart: unless-stopped
+    ports:
+      - "3001:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - credpal
+
+# ─────────────────────────────────────────────────────────────
+#  Microservices
+# ─────────────────────────────────────────────────────────────
+  accounts:
+    build:
+      context: .
+      dockerfile: services/accounts/Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ./:/app
+      - /app/node_modules
+      - accounts_pkg_dist:/app/packages/common/dist
+      - accounts_pkg_constants_dist:/app/packages/constants/dist
+      - accounts_pkg_proto_dist:/app/packages/proto/dist
+      - accounts_pkg_runtime_dist:/app/packages/runtime/dist
+    env_file:
+      - ./env/root.env
+      - ./env/accounts.env
+    environment:
+      RABBITMQ_URL: amqp://credpal:credpal@rabbit:5672
+    ports:
+      - "50051:50051"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbit:
+        condition: service_healthy
+    networks:
+      - credpal
+
+  analytics:
+    build:
+      context: .
+      dockerfile: services/analytics/Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ./:/app
+      - /app/node_modules
+      - analytics_pkg_dist:/app/packages/common/dist
+      - analytics_pkg_constants_dist:/app/packages/constants/dist
+      - analytics_pkg_proto_dist:/app/packages/proto/dist
+      - analytics_pkg_runtime_dist:/app/packages/runtime/dist
+    env_file:
+      - ./env/root.env
+      - ./env/analytics.env
+    environment:
+      RABBITMQ_URL: amqp://credpal:credpal@rabbit:5672
+      MONGODB_URI: mongodb://credpal:credpal@mongodb:27017/analytics?authSource=admin
+    ports:
+      - "50052:50052"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbit:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    networks:
+      - credpal
+
+  notifications:
+    build:
+      context: .
+      dockerfile: services/notifications/Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ./:/app
+      - /app/node_modules
+      - notifications_pkg_dist:/app/packages/common/dist
+      - notifications_pkg_constants_dist:/app/packages/constants/dist
+      - notifications_pkg_proto_dist:/app/packages/proto/dist
+      - notifications_pkg_runtime_dist:/app/packages/runtime/dist
+    env_file:
+      - ./env/root.env
+      - ./env/notifications.env
+    environment:
+      RABBITMQ_URL: amqp://credpal:credpal@rabbit:5672
+    ports:
+      - "50053:50053"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbit:
+        condition: service_healthy
+    networks:
+      - credpal
+
+  wallets:
+    build:
+      context: .
+      dockerfile: services/wallets/Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ./:/app
+      - /app/node_modules
+      - wallets_pkg_dist:/app/packages/common/dist
+      - wallets_pkg_constants_dist:/app/packages/constants/dist
+      - wallets_pkg_proto_dist:/app/packages/proto/dist
+      - wallets_pkg_runtime_dist:/app/packages/runtime/dist
+    env_file:
+      - ./env/root.env
+      - ./env/wallets.env
+    environment:
+      RABBITMQ_URL: amqp://credpal:credpal@rabbit:5672
+    ports:
+      - "50054:50054"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbit:
+        condition: service_healthy
+    networks:
+      - credpal
+
+  gateway:
+    build:
+      context: .
+      dockerfile: services/gateway/Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ./:/app
+      - /app/node_modules
+      - gateway_pkg_dist:/app/packages/common/dist
+      - gateway_pkg_constants_dist:/app/packages/constants/dist
+      - gateway_pkg_proto_dist:/app/packages/proto/dist
+      - gateway_pkg_runtime_dist:/app/packages/runtime/dist
+    env_file:
+      - ./env/root.env
+      - ./env/gateway.env
+    environment:
+      RABBITMQ_URL: amqp://credpal:credpal@rabbit:5672
+    ports:
+      - "3000:3000"
+    depends_on:
+      - accounts
+      - analytics
+      - notifications
+      - wallets
+    networks:
+      - credpal
+
+# ─────────────────────────────────────────────────────────────
+#  Networks
+# ─────────────────────────────────────────────────────────────
+networks:
+  credpal:
+    driver: bridge
+
+# ─────────────────────────────────────────────────────────────
+#  Volumes
+# ─────────────────────────────────────────────────────────────
+volumes:
+  # Infrastructure
+  postgres_data:
+  redis_data:
+  mongo_data:
+  rabbit_data:
+
+  # Package dist — preserved from image build so host clean dist doesn't break services
+  accounts_pkg_dist:
+  accounts_pkg_constants_dist:
+  accounts_pkg_proto_dist:
+  accounts_pkg_runtime_dist:
+
+  analytics_pkg_dist:
+  analytics_pkg_constants_dist:
+  analytics_pkg_proto_dist:
+  analytics_pkg_runtime_dist:
+
+  notifications_pkg_dist:
+  notifications_pkg_constants_dist:
+  notifications_pkg_proto_dist:
+  notifications_pkg_runtime_dist:
+
+  wallets_pkg_dist:
+  wallets_pkg_constants_dist:
+  wallets_pkg_proto_dist:
+  wallets_pkg_runtime_dist:
+
+  gateway_pkg_dist:
+  gateway_pkg_constants_dist:
+  gateway_pkg_proto_dist:
+  gateway_pkg_runtime_dist:

@@ -7,7 +7,13 @@ export const getConfig = (key: string) => {
     isProduction: process.env.NODE_ENV === "production",
     // TODO: Analytics uses mongodb
     datastores: {
-      mongodb: {},
+      mongodb: {
+        uri: process.env.MONGODB_URI,
+        db: process.env.MONGODB_DB,
+        user: process.env.MONGODB_USER,
+        password: process.env.MONGODB_PASSWORD,
+        port: process.env.MONGODB_PORT,
+      },
     },
     grpc: {
       url: process.env.ANALYTICS_SERVICE_URL || "0.0.0.0:50052",

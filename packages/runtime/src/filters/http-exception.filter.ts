@@ -7,7 +7,7 @@ import {
 } from "@nestjs/common";
 import { HttpAdapterHost } from "@nestjs/core";
 import { BaseError } from "@credpal-fx-trading-app/common";
-import { LoggingService } from "@credpal-fx-trading-app/runtime";
+import { LoggingService } from "../services/logging.service.js";
 import { Common } from "@credpal-fx-trading-app/proto";
 
 @Catch()

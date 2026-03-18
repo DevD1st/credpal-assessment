@@ -5,14 +5,13 @@ import { AppModule } from "./app.module.js";
 import {
   LoggingService,
   RequestIdMiddleware,
+  LOGGING_SERVICE_TOKEN,
 } from "@credpal-fx-trading-app/runtime";
 import { GlobalExceptionsFilter } from "@credpal-fx-trading-app/runtime";
-import { getDefaultLoggerOpts } from "@credpal-fx-trading-app/common";
-import { getConfig } from "./utils/index.js";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const logger = app.get<LoggingService>(LoggingService);
+  const logger = app.get<LoggingService>(LOGGING_SERVICE_TOKEN);
   app.useLogger(logger);
 
   app.enableCors();
@@ -30,7 +29,7 @@ async function bootstrap() {
 
   app.use(RequestIdMiddleware);
   const httpAdapter = app.get(HttpAdapterHost);
-  app.useGlobalFilters(new GlobalExceptionsFilter(httpAdapter));
+  app.useGlobalFilters(new GlobalExceptionsFilter(httpAdapter, logger));
 
   const config = new DocumentBuilder()
     .setTitle("CredPal API Gateway")

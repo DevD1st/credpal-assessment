@@ -138,10 +138,10 @@ export const Error: MessageFns<Error> = {
     return obj;
   },
 
-  create(base?: DeepPartial<Error>): Error {
-    return Error.fromPartial(base ?? {});
+  create<I extends Exact<DeepPartial<Error>, I>>(base?: I): Error {
+    return Error.fromPartial(base ?? ({} as any));
   },
-  fromPartial(object: DeepPartial<Error>): Error {
+  fromPartial<I extends Exact<DeepPartial<Error>, I>>(object: I): Error {
     const message = createBaseError();
     message.code = object.code ?? "";
     message.message = object.message ?? "";
@@ -231,10 +231,10 @@ export const ErrorDetail: MessageFns<ErrorDetail> = {
     return obj;
   },
 
-  create(base?: DeepPartial<ErrorDetail>): ErrorDetail {
-    return ErrorDetail.fromPartial(base ?? {});
+  create<I extends Exact<DeepPartial<ErrorDetail>, I>>(base?: I): ErrorDetail {
+    return ErrorDetail.fromPartial(base ?? ({} as any));
   },
-  fromPartial(object: DeepPartial<ErrorDetail>): ErrorDetail {
+  fromPartial<I extends Exact<DeepPartial<ErrorDetail>, I>>(object: I): ErrorDetail {
     const message = createBaseErrorDetail();
     message.type = object.type ?? "";
     message.label = object.label ?? "";
@@ -277,10 +277,10 @@ export const Empty: MessageFns<Empty> = {
     return obj;
   },
 
-  create(base?: DeepPartial<Empty>): Empty {
-    return Empty.fromPartial(base ?? {});
+  create<I extends Exact<DeepPartial<Empty>, I>>(base?: I): Empty {
+    return Empty.fromPartial(base ?? ({} as any));
   },
-  fromPartial(_: DeepPartial<Empty>): Empty {
+  fromPartial<I extends Exact<DeepPartial<Empty>, I>>(_: I): Empty {
     const message = createBaseEmpty();
     return message;
   },
@@ -351,10 +351,10 @@ export const EmptyResponse: MessageFns<EmptyResponse> = {
     return obj;
   },
 
-  create(base?: DeepPartial<EmptyResponse>): EmptyResponse {
-    return EmptyResponse.fromPartial(base ?? {});
+  create<I extends Exact<DeepPartial<EmptyResponse>, I>>(base?: I): EmptyResponse {
+    return EmptyResponse.fromPartial(base ?? ({} as any));
   },
-  fromPartial(object: DeepPartial<EmptyResponse>): EmptyResponse {
+  fromPartial<I extends Exact<DeepPartial<EmptyResponse>, I>>(object: I): EmptyResponse {
     const message = createBaseEmptyResponse();
     message.data = (object.data !== undefined && object.data !== null) ? Empty.fromPartial(object.data) : undefined;
     message.error = (object.error !== undefined && object.error !== null) ? Error.fromPartial(object.error) : undefined;
@@ -370,6 +370,10 @@ export type DeepPartial<T> = T extends Builtin ? T
   : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
 
+type KeysOfUnion<T> = T extends T ? keyof T : never;
+export type Exact<P, I extends P> = P extends Builtin ? P
+  : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
+
 function isSet(value: any): boolean {
   return value !== null && value !== undefined;
 }
@@ -379,6 +383,6 @@ export interface MessageFns<T> {
   decode(input: BinaryReader | Uint8Array, length?: number): T;
   fromJSON(object: any): T;
   toJSON(message: T): unknown;
-  create(base?: DeepPartial<T>): T;
-  fromPartial(object: DeepPartial<T>): T;
+  create<I extends Exact<DeepPartial<T>, I>>(base?: I): T;
+  fromPartial<I extends Exact<DeepPartial<T>, I>>(object: I): T;
 }

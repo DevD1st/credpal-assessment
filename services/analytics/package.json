@@ -41,6 +41,8 @@
     "@opentelemetry/auto-instrumentations-node": "^0.71.0",
     "@opentelemetry/sdk-node": "^0.213.0",
     "@opentelemetry/sdk-trace-node": "^2.6.0",
+    "amqp-connection-manager": "^5.0.0",
+    "amqplib": "^0.10.9",
     "mongoose": "^9.3.1"
   },
   "jest": {

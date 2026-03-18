@@ -44,6 +44,8 @@
     "@opentelemetry/auto-instrumentations-node": "^0.71.0",
     "@opentelemetry/sdk-node": "^0.213.0",
     "@opentelemetry/sdk-trace-node": "^2.6.0",
+    "amqp-connection-manager": "^5.0.0",
+    "amqplib": "^0.10.9",
     "pg": "^8.20.0",
     "typeorm": "^0.3.28"
   },

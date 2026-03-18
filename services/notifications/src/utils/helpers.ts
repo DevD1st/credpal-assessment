@@ -8,6 +8,11 @@ export const getConfig = (key: string) => {
     grpc: {
       url: process.env.NOTIFICATIONS_SERVICE_URL || "0.0.0.0:50053",
     },
+    rabbitmq: {
+      url: process.env.RABBITMQ_URL || "amqp://credpal:credpal@localhost:5672",
+      exchange: process.env.RABBITMQ_EXCHANGE || "credpal_events",
+      queue: process.env.SERVICE || "notifications",
+    },
   };
   return key.split(".").reduce((obj, k) => obj?.[k], config as any);
 };

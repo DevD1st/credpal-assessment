@@ -42,6 +42,27 @@ async function bootstrap() {
       },
     });
 
+    const rabbitEnv = getConfig("rabbitmq");
+    app.connectMicroservice<MicroserviceOptions>(
+      {
+        transport: Transport.RMQ,
+        options: {
+          urls: [rabbitEnv.url],
+          queue: rabbitEnv.queue,
+          exchange: rabbitEnv.exchange,
+          exchangeType: "topic",
+          prefetchCount: 1,
+          persistent: true,
+          wildcards: true,
+          noAck: false,
+          queueOptions: {
+            durable: true,
+          },
+        } as any,
+      },
+      { inheritAppConfig: true },
+    );
+
     app.enableShutdownHooks();
     await app.startAllMicroservices();
     await app.init();

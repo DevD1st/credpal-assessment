@@ -1,4 +1,5 @@
 import { HttpAdapterHost, NestFactory, Reflector } from "@nestjs/core";
+import { MicroserviceOptions, Transport } from "@nestjs/microservices";
 import { ClassSerializerInterceptor, ValidationPipe } from "@nestjs/common";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { AppModule } from "./app.module.js";
@@ -8,6 +9,7 @@ import {
   LOGGING_SERVICE_TOKEN,
 } from "@credpal-fx-trading-app/runtime";
 import { GlobalExceptionsFilter } from "@credpal-fx-trading-app/runtime";
+import { getConfig } from "./utils/index.js";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -40,6 +42,29 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup("api/docs", app, document);
+
+  const rabbitEnv = getConfig("rabbitmq");
+  app.connectMicroservice<MicroserviceOptions>(
+    {
+      transport: Transport.RMQ,
+      options: {
+        urls: [rabbitEnv.url],
+        queue: rabbitEnv.queue,
+        exchange: rabbitEnv.exchange,
+        exchangeType: "topic",
+        prefetchCount: 1,
+        persistent: true,
+        wildcards: true,
+        noAck: false,
+        queueOptions: {
+          durable: true,
+        },
+      } as any,
+    },
+    { inheritAppConfig: true },
+  );
+
+  await app.startAllMicroservices();
 
   const port = process.env.PORT || 3000;
   await app.listen(port, "0.0.0.0");

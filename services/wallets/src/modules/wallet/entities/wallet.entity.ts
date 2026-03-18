@@ -25,28 +25,28 @@ export const chk_wallet_status = "chk_wallet_status";
 @Check(chk_wallet_balance, `"balance" >= 0`)
 @Check(chk_wallet_status, `"status" IN ('ACTIVE', 'DISABLED')`)
 export class Wallet {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn("uuid", { name: "id" })
   id: string = uuidv7(); // uuidv7 scales better
 
-  @Column("uuid")
+  @Column("uuid", { name: "user_id" })
   userId: string;
 
-  @Column()
+  @Column({ name: "currency" })
   currency: string;
 
-  @Column({ type: "decimal", precision: 18, scale: 4, default: 0.0 })
+  @Column({ name: "balance", type: "decimal", precision: 18, scale: 4, default: 0.0 })
   balance: number;
 
-  @Column({ default: "ACTIVE" })
+  @Column({ name: "status", default: "ACTIVE" })
   status: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: "created_at" })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: "updated_at" })
   updatedAt: Date;
 
   @ManyToOne(() => User, (user: User) => user.id, { onDelete: "RESTRICT" })
-  @JoinColumn({ name: "userId" })
+  @JoinColumn({ name: "user_id" })
   user: User;
 }

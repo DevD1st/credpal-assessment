@@ -16,24 +16,27 @@ export const chk_user_role = "chk_user_role";
 @Unique(idx_user_email, ["email"])
 @Check(chk_user_role, `"role" IN ('USER', 'ADMIN')`)
 export class User {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn("uuid", { name: "id" })
   id: string = uuidv7(); // scales beter
 
-  @Column()
+  @Column({ name: "email" })
   email: string;
 
-  @Column()
+  @Column({ name: "password_hash" })
   passwordHash: string;
 
-  @Column({ default: "USER" })
+  @Column({ name: "role", default: "USER" })
   role: string;
 
-  @Column({ default: false })
+  @Column({ name: "is_verified", default: false })
   isVerified: boolean;
 
-  @CreateDateColumn()
+  @Column({ name: "token_version", type: "int", default: 0 })
+  tokenVersion: number;
+
+  @CreateDateColumn({ name: "created_at" })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: "updated_at" })
   updatedAt: Date;
 }

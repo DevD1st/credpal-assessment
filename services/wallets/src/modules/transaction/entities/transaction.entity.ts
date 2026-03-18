@@ -28,68 +28,68 @@ export const chk_transaction_status = "chk_transaction_status";
 @Check(chk_transaction_type, `"type" IN ('FUNDING', 'CONVERSION')`)
 @Check(chk_transaction_status, `"status" IN ('PENDING', 'SUCCESS', 'FAILED')`)
 export class Transaction {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn("uuid", { name: "id" })
   id: string = uuidv7(); // scales better
 
-  @Column("uuid")
+  @Column("uuid", { name: "user_id" })
   userId: string;
 
-  @Column("uuid")
+  @Column("uuid", { name: "base_wallet_id" })
   baseWalletId: string;
 
-  @Column("uuid", { nullable: true })
+  @Column("uuid", { name: "target_wallet_id", nullable: true })
   targetWalletId: string;
 
-  @Column()
+  @Column({ name: "type" })
   type: string;
 
-  @Column()
+  @Column({ name: "status" })
   status: string;
 
-  @Column()
+  @Column({ name: "base_currency" })
   baseCurrency: string;
 
-  @Column({ nullable: true })
+  @Column({ name: "target_currency", nullable: true })
   targetCurrency: string;
 
-  @Column({ type: "decimal", precision: 18, scale: 4 })
+  @Column({ name: "base_amount", type: "decimal", precision: 18, scale: 4 })
   baseAmount: number;
 
-  @Column({ type: "decimal", precision: 18, scale: 4, nullable: true })
+  @Column({ name: "target_amount", type: "decimal", precision: 18, scale: 4, nullable: true })
   targetAmount: number;
 
-  @Column({ type: "decimal", precision: 18, scale: 4, default: 1.0 })
+  @Column({ name: "exchange_rate", type: "decimal", precision: 18, scale: 4, default: 1.0 })
   exchangeRate: number;
 
-  @Column({ type: "decimal", precision: 18, scale: 4, default: 1.0 })
+  @Column({ name: "exchange_rate_with_spread", type: "decimal", precision: 18, scale: 4, default: 1.0 })
   exchangeRateWithSpread: number;
 
-  @Column({ type: "decimal", precision: 18, scale: 4, default: 0.0 })
+  @Column({ name: "percentage_spread", type: "decimal", precision: 18, scale: 4, default: 0.0 })
   percentageSpread: number;
 
-  @Column({ unique: true })
+  @Column({ name: "reference", unique: true })
   reference: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: "created_at" })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: "updated_at" })
   updatedAt: Date;
 
   @ManyToOne(() => User, (user: User) => user.id, { onDelete: "RESTRICT" })
-  @JoinColumn({ name: "userId" })
+  @JoinColumn({ name: "user_id" })
   user: User;
 
   @ManyToOne(() => Wallet, (wallet: Wallet) => wallet.id, {
     onDelete: "RESTRICT",
   })
-  @JoinColumn({ name: "baseWalletId" })
+  @JoinColumn({ name: "base_wallet_id" })
   baseWallet: Wallet;
 
   @ManyToOne(() => Wallet, (wallet: Wallet) => wallet.id, {
     onDelete: "RESTRICT",
   })
-  @JoinColumn({ name: "targetWalletId" })
+  @JoinColumn({ name: "target_wallet_id" })
   targetWallet: Wallet;
 
   @OneToMany(() => Ledger, (ledger: Ledger) => ledger.transaction)

@@ -21,34 +21,34 @@ export const chk_ledger_type = "chk_ledger_type";
 @Index(idx_ledger_transaction_id, ["transactionId"])
 @Check(chk_ledger_type, `"type" IN ('CREDIT', 'DEBIT')`)
 export class Ledger {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn("uuid", { name: "id" })
   id: string = uuidv7(); // scales better
 
-  @Column("uuid")
+  @Column("uuid", { name: "wallet_id" })
   walletId: string;
 
-  @Column("uuid")
+  @Column("uuid", { name: "transaction_id" })
   transactionId: string;
 
-  @Column()
+  @Column({ name: "type" })
   type: string;
 
-  @Column()
+  @Column({ name: "currency" })
   currency: string;
 
-  @Column({ type: "decimal", precision: 18, scale: 4 })
+  @Column({ name: "amount", type: "decimal", precision: 18, scale: 4 })
   amount: number;
 
-  @Column({ type: "decimal", precision: 18, scale: 4 })
+  @Column({ name: "running_balance", type: "decimal", precision: 18, scale: 4 })
   runningBalance: number;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: "created_at" })
   createdAt: Date;
 
   @ManyToOne(() => Wallet, (wallet: Wallet) => wallet.id, {
     onDelete: "RESTRICT",
   })
-  @JoinColumn({ name: "walletId" })
+  @JoinColumn({ name: "wallet_id" })
   wallet: Wallet;
 
   @ManyToOne(
@@ -56,6 +56,6 @@ export class Ledger {
     (transaction: Transaction) => transaction.ledgers,
     { onDelete: "RESTRICT" },
   )
-  @JoinColumn({ name: "transactionId" })
+  @JoinColumn({ name: "transaction_id" })
   transaction: Transaction;
 }

@@ -5,4 +5,6 @@ export const RABBITMQ_TOPICS = {
 
 export const REDIS_KEYS = {
   ACCOUNT_VERIFICATION: (phone: string, acctType: string) => `account:verification:${phone}:${acctType}`,
+  ACCOUNT_VERIFICATION_EMAIL: (email: string) => `account:verification:email:${email}`,
+  REFRESH_TOKEN: (jti: string) => `auth:refresh_token:${jti}`,
 } as const;

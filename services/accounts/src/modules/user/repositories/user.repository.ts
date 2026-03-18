@@ -34,4 +34,12 @@ export class UserRepository extends Repository<User> implements IUserRepository 
   async findById(id: string): Promise<User | null> {
     return this.findOne({ where: { id } });
   }
+
+  async updateUser(id: string, updates: Partial<User>): Promise<void> {
+    try {
+      await this.update({ id }, updates);
+    } catch (error) {
+      throw new InternalServerErrorException('Unable to update user record.');
+    }
+  }
 }

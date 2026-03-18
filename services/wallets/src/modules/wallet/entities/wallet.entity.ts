@@ -4,14 +4,10 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
-  ManyToOne,
-  OneToMany,
   Index,
   Check,
   Unique,
-  JoinColumn,
 } from "typeorm";
-import { User } from "../../user/entities/user.entity.js";
 import { v7 as uuidv7 } from "uuid";
 
 export const idx_wallet_user_id = "idx_wallet_user_id";
@@ -46,7 +42,4 @@ export class Wallet {
   @UpdateDateColumn({ name: "updated_at" })
   updatedAt: Date;
 
-  @ManyToOne(() => User, (user: User) => user.id, { onDelete: "RESTRICT" })
-  @JoinColumn({ name: "user_id" })
-  user: User;
 }

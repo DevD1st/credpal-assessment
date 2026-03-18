@@ -17,7 +17,7 @@ export const chk_user_role = "chk_user_role";
 @Check(chk_user_role, `"role" IN ('USER', 'ADMIN')`)
 export class User {
   @PrimaryGeneratedColumn("uuid", { name: "id" })
-  id: string = uuidv7(); // scales beter
+  id: string = uuidv7();
 
   @Column({ name: "email" })
   email: string;

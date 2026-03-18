@@ -10,7 +10,6 @@ import {
   Check,
   JoinColumn,
 } from "typeorm";
-import { User } from "../../user/entities/user.entity.js";
 import { Wallet } from "../../wallet/entities/wallet.entity.js";
 import { Ledger } from "./ledger.entity.js";
 import { v7 as uuidv7 } from "uuid";
@@ -75,10 +74,6 @@ export class Transaction {
 
   @UpdateDateColumn({ name: "updated_at" })
   updatedAt: Date;
-
-  @ManyToOne(() => User, (user: User) => user.id, { onDelete: "RESTRICT" })
-  @JoinColumn({ name: "user_id" })
-  user: User;
 
   @ManyToOne(() => Wallet, (wallet: Wallet) => wallet.id, {
     onDelete: "RESTRICT",

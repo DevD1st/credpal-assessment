@@ -1,13 +1,39 @@
 import { Module } from "@nestjs/common";
 import { CqrsModule } from "@nestjs/cqrs";
+import { ClientsModule, Transport } from "@nestjs/microservices";
 import { WalletRepository } from "./repositories/wallet.repository.js";
 import { WALLET_REPOSITORY_TOKEN } from "./repositories/wallet.repository.interface.js";
+import { WalletController } from "./controllers/wallet.controller.js";
+import { CreateWalletHandler } from "./commands/handlers/create-wallet.handler.js";
+import { RABBIT_MQ_CLIENT } from "../../utils/index.js";
+import { getConfig } from "../../utils/index.js";
 
-const CommandHandlers: any[] = [];
+const CommandHandlers = [CreateWalletHandler];
 const QueryHandlers: any[] = [];
 
 @Module({
-  imports: [CqrsModule],
+  imports: [
+    CqrsModule,
+    ClientsModule.register([
+      {
+        name: RABBIT_MQ_CLIENT,
+        transport: Transport.RMQ,
+        options: {
+          urls: [getConfig("rabbitmq.url")],
+          queue: getConfig("rabbitmq.queue"),
+          exchange: getConfig("rabbitmq.exchange"),
+          exchangeType: "topic",
+          prefetchCount: 1,
+          persistent: true,
+          wildcards: true,
+          noAck: false,
+          queueOptions: {
+            durable: true,
+          },
+        },
+      },
+    ]),
+  ],
   providers: [
     ...CommandHandlers,
     ...QueryHandlers,
@@ -16,7 +42,7 @@ const QueryHandlers: any[] = [];
       useClass: WalletRepository,
     },
   ],
-  controllers: [],
+  controllers: [WalletController],
   exports: [WALLET_REPOSITORY_TOKEN],
 })
 export class WalletModule {}

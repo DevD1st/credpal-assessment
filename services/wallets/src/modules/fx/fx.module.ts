@@ -5,9 +5,11 @@ import { ClientsModule, Transport } from "@nestjs/microservices";
 import { CreateQuoteHandler } from "./commands/handlers/create-quote.handler.js";
 import { FxListener } from "./listeners/fx.listener.js";
 import { getConfig, RABBIT_MQ_CLIENT } from "../../utils/index.js";
+import { FetchExchangeRatesHandler } from "./queries/handlers/fetch-exchange-rates.handler.js";
+import { FxController } from "./controllers/fx.controller.js";
 
 const CommandHandlers = [CreateQuoteHandler];
-const QueryHandlers: any[] = [];
+const QueryHandlers = [FetchExchangeRatesHandler];
 
 @Module({
   imports: [
@@ -34,6 +36,6 @@ const QueryHandlers: any[] = [];
     ]),
   ],
   providers: [...CommandHandlers, ...QueryHandlers, FxListener],
-  controllers: [],
+  controllers: [FxController],
 })
 export class FxModule {}

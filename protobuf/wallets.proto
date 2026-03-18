@@ -12,6 +12,14 @@ service WalletsService {
   rpc TradeCurrency(TradeCurrencyInput) returns (TradeCurrencyResponse);
 }
 
+service FxService {
+  rpc FetchExchangeRates(FetchExchangeRatesInput) returns (FetchExchangeRatesResponse);
+}
+
+service TransactionsService {
+  rpc GetTransactions(GetTransactionsInput) returns (GetTransactionsResponse);
+}
+
 // ------------------------------------------
 // Requests
 // ------------------------------------------
@@ -43,6 +51,17 @@ message TradeCurrencyInput {
   string base_currency = 2;
   string target_currency = 3;
   int64 amount = 4;
+}
+
+message FetchExchangeRatesInput {
+  string base_currency = 1;
+}
+
+message GetTransactionsInput {
+  optional string currency = 1;
+  optional string status = 2;
+  optional int32 offset = 3;
+  optional int32 limit = 4;
 }
 
 // ------------------------------------------
@@ -94,6 +113,37 @@ message TradeCurrencyResponse {
     Transaction data = 1;
     common.Error error = 2;
   }
+}
+
+message FetchExchangeRatesResponse {
+  oneof response {
+    ExchangeRates data = 1;
+    common.Error error = 2;
+  }
+}
+
+message ExchangeRates {
+  repeated ExchangeRate exchange_rates = 1;
+}
+
+message ExchangeRate {
+  string base_currency = 1;
+  string target_currency = 2;
+  int64 exchange_rate = 3;
+  int64 exchange_rate_with_spread = 4;
+  int32 percentage_spread = 5;
+}
+
+message GetTransactionsResponse {
+  oneof response {
+    Transactions data = 1;
+    common.Error error = 2;
+  }
+}
+
+message Transactions {
+  repeated Transaction transactions = 1;
+  int32 total = 2;
 }
 
 // ------------------------------------------

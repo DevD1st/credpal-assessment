@@ -57,6 +57,17 @@ export interface TradeCurrencyInput {
   amount: number;
 }
 
+export interface FetchExchangeRatesInput {
+  baseCurrency: string;
+}
+
+export interface GetTransactionsInput {
+  currency?: string | undefined;
+  status?: string | undefined;
+  offset?: number | undefined;
+  limit?: number | undefined;
+}
+
 /**
  * ------------------------------------------
  * Responses
@@ -98,6 +109,33 @@ export interface Quote {
 export interface TradeCurrencyResponse {
   data?: Transaction | undefined;
   error?: Error | undefined;
+}
+
+export interface FetchExchangeRatesResponse {
+  data?: ExchangeRates | undefined;
+  error?: Error | undefined;
+}
+
+export interface ExchangeRates {
+  exchangeRates: ExchangeRate[];
+}
+
+export interface ExchangeRate {
+  baseCurrency: string;
+  targetCurrency: string;
+  exchangeRate: number;
+  exchangeRateWithSpread: number;
+  percentageSpread: number;
+}
+
+export interface GetTransactionsResponse {
+  data?: Transactions | undefined;
+  error?: Error | undefined;
+}
+
+export interface Transactions {
+  transactions: Transaction[];
+  total: number;
 }
 
 /**
@@ -600,6 +638,178 @@ export const TradeCurrencyInput: MessageFns<TradeCurrencyInput> = {
     message.baseCurrency = object.baseCurrency ?? "";
     message.targetCurrency = object.targetCurrency ?? "";
     message.amount = object.amount ?? 0;
+    return message;
+  },
+};
+
+function createBaseFetchExchangeRatesInput(): FetchExchangeRatesInput {
+  return { baseCurrency: "" };
+}
+
+export const FetchExchangeRatesInput: MessageFns<FetchExchangeRatesInput> = {
+  encode(message: FetchExchangeRatesInput, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.baseCurrency !== "") {
+      writer.uint32(10).string(message.baseCurrency);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): FetchExchangeRatesInput {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseFetchExchangeRatesInput();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.baseCurrency = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): FetchExchangeRatesInput {
+    return {
+      baseCurrency: isSet(object.baseCurrency)
+        ? globalThis.String(object.baseCurrency)
+        : isSet(object.base_currency)
+        ? globalThis.String(object.base_currency)
+        : "",
+    };
+  },
+
+  toJSON(message: FetchExchangeRatesInput): unknown {
+    const obj: any = {};
+    if (message.baseCurrency !== "") {
+      obj.baseCurrency = message.baseCurrency;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<FetchExchangeRatesInput>): FetchExchangeRatesInput {
+    return FetchExchangeRatesInput.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<FetchExchangeRatesInput>): FetchExchangeRatesInput {
+    const message = createBaseFetchExchangeRatesInput();
+    message.baseCurrency = object.baseCurrency ?? "";
+    return message;
+  },
+};
+
+function createBaseGetTransactionsInput(): GetTransactionsInput {
+  return { currency: undefined, status: undefined, offset: undefined, limit: undefined };
+}
+
+export const GetTransactionsInput: MessageFns<GetTransactionsInput> = {
+  encode(message: GetTransactionsInput, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.currency !== undefined) {
+      writer.uint32(10).string(message.currency);
+    }
+    if (message.status !== undefined) {
+      writer.uint32(18).string(message.status);
+    }
+    if (message.offset !== undefined) {
+      writer.uint32(24).int32(message.offset);
+    }
+    if (message.limit !== undefined) {
+      writer.uint32(32).int32(message.limit);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): GetTransactionsInput {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseGetTransactionsInput();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.currency = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.status = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.offset = reader.int32();
+          continue;
+        }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.limit = reader.int32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): GetTransactionsInput {
+    return {
+      currency: isSet(object.currency) ? globalThis.String(object.currency) : undefined,
+      status: isSet(object.status) ? globalThis.String(object.status) : undefined,
+      offset: isSet(object.offset) ? globalThis.Number(object.offset) : undefined,
+      limit: isSet(object.limit) ? globalThis.Number(object.limit) : undefined,
+    };
+  },
+
+  toJSON(message: GetTransactionsInput): unknown {
+    const obj: any = {};
+    if (message.currency !== undefined) {
+      obj.currency = message.currency;
+    }
+    if (message.status !== undefined) {
+      obj.status = message.status;
+    }
+    if (message.offset !== undefined) {
+      obj.offset = Math.round(message.offset);
+    }
+    if (message.limit !== undefined) {
+      obj.limit = Math.round(message.limit);
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<GetTransactionsInput>): GetTransactionsInput {
+    return GetTransactionsInput.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<GetTransactionsInput>): GetTransactionsInput {
+    const message = createBaseGetTransactionsInput();
+    message.currency = object.currency ?? undefined;
+    message.status = object.status ?? undefined;
+    message.offset = object.offset ?? undefined;
+    message.limit = object.limit ?? undefined;
     return message;
   },
 };
@@ -1194,6 +1404,448 @@ export const TradeCurrencyResponse: MessageFns<TradeCurrencyResponse> = {
       ? Transaction.fromPartial(object.data)
       : undefined;
     message.error = (object.error !== undefined && object.error !== null) ? Error.fromPartial(object.error) : undefined;
+    return message;
+  },
+};
+
+function createBaseFetchExchangeRatesResponse(): FetchExchangeRatesResponse {
+  return { data: undefined, error: undefined };
+}
+
+export const FetchExchangeRatesResponse: MessageFns<FetchExchangeRatesResponse> = {
+  encode(message: FetchExchangeRatesResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.data !== undefined) {
+      ExchangeRates.encode(message.data, writer.uint32(10).fork()).join();
+    }
+    if (message.error !== undefined) {
+      Error.encode(message.error, writer.uint32(18).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): FetchExchangeRatesResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseFetchExchangeRatesResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.data = ExchangeRates.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.error = Error.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): FetchExchangeRatesResponse {
+    return {
+      data: isSet(object.data) ? ExchangeRates.fromJSON(object.data) : undefined,
+      error: isSet(object.error) ? Error.fromJSON(object.error) : undefined,
+    };
+  },
+
+  toJSON(message: FetchExchangeRatesResponse): unknown {
+    const obj: any = {};
+    if (message.data !== undefined) {
+      obj.data = ExchangeRates.toJSON(message.data);
+    }
+    if (message.error !== undefined) {
+      obj.error = Error.toJSON(message.error);
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<FetchExchangeRatesResponse>): FetchExchangeRatesResponse {
+    return FetchExchangeRatesResponse.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<FetchExchangeRatesResponse>): FetchExchangeRatesResponse {
+    const message = createBaseFetchExchangeRatesResponse();
+    message.data = (object.data !== undefined && object.data !== null)
+      ? ExchangeRates.fromPartial(object.data)
+      : undefined;
+    message.error = (object.error !== undefined && object.error !== null) ? Error.fromPartial(object.error) : undefined;
+    return message;
+  },
+};
+
+function createBaseExchangeRates(): ExchangeRates {
+  return { exchangeRates: [] };
+}
+
+export const ExchangeRates: MessageFns<ExchangeRates> = {
+  encode(message: ExchangeRates, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    for (const v of message.exchangeRates) {
+      ExchangeRate.encode(v!, writer.uint32(10).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ExchangeRates {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseExchangeRates();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.exchangeRates.push(ExchangeRate.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ExchangeRates {
+    return {
+      exchangeRates: globalThis.Array.isArray(object?.exchangeRates)
+        ? object.exchangeRates.map((e: any) => ExchangeRate.fromJSON(e))
+        : globalThis.Array.isArray(object?.exchange_rates)
+        ? object.exchange_rates.map((e: any) => ExchangeRate.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: ExchangeRates): unknown {
+    const obj: any = {};
+    if (message.exchangeRates?.length) {
+      obj.exchangeRates = message.exchangeRates.map((e) => ExchangeRate.toJSON(e));
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<ExchangeRates>): ExchangeRates {
+    return ExchangeRates.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<ExchangeRates>): ExchangeRates {
+    const message = createBaseExchangeRates();
+    message.exchangeRates = object.exchangeRates?.map((e) => ExchangeRate.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseExchangeRate(): ExchangeRate {
+  return { baseCurrency: "", targetCurrency: "", exchangeRate: 0, exchangeRateWithSpread: 0, percentageSpread: 0 };
+}
+
+export const ExchangeRate: MessageFns<ExchangeRate> = {
+  encode(message: ExchangeRate, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.baseCurrency !== "") {
+      writer.uint32(10).string(message.baseCurrency);
+    }
+    if (message.targetCurrency !== "") {
+      writer.uint32(18).string(message.targetCurrency);
+    }
+    if (message.exchangeRate !== 0) {
+      writer.uint32(24).int64(message.exchangeRate);
+    }
+    if (message.exchangeRateWithSpread !== 0) {
+      writer.uint32(32).int64(message.exchangeRateWithSpread);
+    }
+    if (message.percentageSpread !== 0) {
+      writer.uint32(40).int32(message.percentageSpread);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ExchangeRate {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseExchangeRate();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.baseCurrency = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.targetCurrency = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.exchangeRate = longToNumber(reader.int64());
+          continue;
+        }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.exchangeRateWithSpread = longToNumber(reader.int64());
+          continue;
+        }
+        case 5: {
+          if (tag !== 40) {
+            break;
+          }
+
+          message.percentageSpread = reader.int32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ExchangeRate {
+    return {
+      baseCurrency: isSet(object.baseCurrency)
+        ? globalThis.String(object.baseCurrency)
+        : isSet(object.base_currency)
+        ? globalThis.String(object.base_currency)
+        : "",
+      targetCurrency: isSet(object.targetCurrency)
+        ? globalThis.String(object.targetCurrency)
+        : isSet(object.target_currency)
+        ? globalThis.String(object.target_currency)
+        : "",
+      exchangeRate: isSet(object.exchangeRate)
+        ? globalThis.Number(object.exchangeRate)
+        : isSet(object.exchange_rate)
+        ? globalThis.Number(object.exchange_rate)
+        : 0,
+      exchangeRateWithSpread: isSet(object.exchangeRateWithSpread)
+        ? globalThis.Number(object.exchangeRateWithSpread)
+        : isSet(object.exchange_rate_with_spread)
+        ? globalThis.Number(object.exchange_rate_with_spread)
+        : 0,
+      percentageSpread: isSet(object.percentageSpread)
+        ? globalThis.Number(object.percentageSpread)
+        : isSet(object.percentage_spread)
+        ? globalThis.Number(object.percentage_spread)
+        : 0,
+    };
+  },
+
+  toJSON(message: ExchangeRate): unknown {
+    const obj: any = {};
+    if (message.baseCurrency !== "") {
+      obj.baseCurrency = message.baseCurrency;
+    }
+    if (message.targetCurrency !== "") {
+      obj.targetCurrency = message.targetCurrency;
+    }
+    if (message.exchangeRate !== 0) {
+      obj.exchangeRate = Math.round(message.exchangeRate);
+    }
+    if (message.exchangeRateWithSpread !== 0) {
+      obj.exchangeRateWithSpread = Math.round(message.exchangeRateWithSpread);
+    }
+    if (message.percentageSpread !== 0) {
+      obj.percentageSpread = Math.round(message.percentageSpread);
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<ExchangeRate>): ExchangeRate {
+    return ExchangeRate.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<ExchangeRate>): ExchangeRate {
+    const message = createBaseExchangeRate();
+    message.baseCurrency = object.baseCurrency ?? "";
+    message.targetCurrency = object.targetCurrency ?? "";
+    message.exchangeRate = object.exchangeRate ?? 0;
+    message.exchangeRateWithSpread = object.exchangeRateWithSpread ?? 0;
+    message.percentageSpread = object.percentageSpread ?? 0;
+    return message;
+  },
+};
+
+function createBaseGetTransactionsResponse(): GetTransactionsResponse {
+  return { data: undefined, error: undefined };
+}
+
+export const GetTransactionsResponse: MessageFns<GetTransactionsResponse> = {
+  encode(message: GetTransactionsResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.data !== undefined) {
+      Transactions.encode(message.data, writer.uint32(10).fork()).join();
+    }
+    if (message.error !== undefined) {
+      Error.encode(message.error, writer.uint32(18).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): GetTransactionsResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseGetTransactionsResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.data = Transactions.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.error = Error.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): GetTransactionsResponse {
+    return {
+      data: isSet(object.data) ? Transactions.fromJSON(object.data) : undefined,
+      error: isSet(object.error) ? Error.fromJSON(object.error) : undefined,
+    };
+  },
+
+  toJSON(message: GetTransactionsResponse): unknown {
+    const obj: any = {};
+    if (message.data !== undefined) {
+      obj.data = Transactions.toJSON(message.data);
+    }
+    if (message.error !== undefined) {
+      obj.error = Error.toJSON(message.error);
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<GetTransactionsResponse>): GetTransactionsResponse {
+    return GetTransactionsResponse.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<GetTransactionsResponse>): GetTransactionsResponse {
+    const message = createBaseGetTransactionsResponse();
+    message.data = (object.data !== undefined && object.data !== null)
+      ? Transactions.fromPartial(object.data)
+      : undefined;
+    message.error = (object.error !== undefined && object.error !== null) ? Error.fromPartial(object.error) : undefined;
+    return message;
+  },
+};
+
+function createBaseTransactions(): Transactions {
+  return { transactions: [], total: 0 };
+}
+
+export const Transactions: MessageFns<Transactions> = {
+  encode(message: Transactions, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    for (const v of message.transactions) {
+      Transaction.encode(v!, writer.uint32(10).fork()).join();
+    }
+    if (message.total !== 0) {
+      writer.uint32(16).int32(message.total);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): Transactions {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseTransactions();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.transactions.push(Transaction.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.total = reader.int32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): Transactions {
+    return {
+      transactions: globalThis.Array.isArray(object?.transactions)
+        ? object.transactions.map((e: any) => Transaction.fromJSON(e))
+        : [],
+      total: isSet(object.total) ? globalThis.Number(object.total) : 0,
+    };
+  },
+
+  toJSON(message: Transactions): unknown {
+    const obj: any = {};
+    if (message.transactions?.length) {
+      obj.transactions = message.transactions.map((e) => Transaction.toJSON(e));
+    }
+    if (message.total !== 0) {
+      obj.total = Math.round(message.total);
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<Transactions>): Transactions {
+    return Transactions.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<Transactions>): Transactions {
+    const message = createBaseTransactions();
+    message.transactions = object.transactions?.map((e) => Transaction.fromPartial(e)) || [];
+    message.total = object.total ?? 0;
     return message;
   },
 };
@@ -1874,6 +2526,94 @@ export const WalletsServiceClient = makeGenericClientConstructor(
 ) as unknown as {
   new (address: string, credentials: ChannelCredentials, options?: Partial<ClientOptions>): WalletsServiceClient;
   service: typeof WalletsServiceService;
+  serviceName: string;
+};
+
+export type FxServiceService = typeof FxServiceService;
+export const FxServiceService = {
+  fetchExchangeRates: {
+    path: "/wallets.FxService/FetchExchangeRates" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: FetchExchangeRatesInput): Buffer =>
+      Buffer.from(FetchExchangeRatesInput.encode(value).finish()),
+    requestDeserialize: (value: Buffer): FetchExchangeRatesInput => FetchExchangeRatesInput.decode(value),
+    responseSerialize: (value: FetchExchangeRatesResponse): Buffer =>
+      Buffer.from(FetchExchangeRatesResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): FetchExchangeRatesResponse => FetchExchangeRatesResponse.decode(value),
+  },
+} as const;
+
+export interface FxServiceServer extends UntypedServiceImplementation {
+  fetchExchangeRates: handleUnaryCall<FetchExchangeRatesInput, FetchExchangeRatesResponse>;
+}
+
+export interface FxServiceClient extends Client {
+  fetchExchangeRates(
+    request: FetchExchangeRatesInput,
+    callback: (error: ServiceError | null, response: FetchExchangeRatesResponse) => void,
+  ): ClientUnaryCall;
+  fetchExchangeRates(
+    request: FetchExchangeRatesInput,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: FetchExchangeRatesResponse) => void,
+  ): ClientUnaryCall;
+  fetchExchangeRates(
+    request: FetchExchangeRatesInput,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: FetchExchangeRatesResponse) => void,
+  ): ClientUnaryCall;
+}
+
+export const FxServiceClient = makeGenericClientConstructor(FxServiceService, "wallets.FxService") as unknown as {
+  new (address: string, credentials: ChannelCredentials, options?: Partial<ClientOptions>): FxServiceClient;
+  service: typeof FxServiceService;
+  serviceName: string;
+};
+
+export type TransactionsServiceService = typeof TransactionsServiceService;
+export const TransactionsServiceService = {
+  getTransactions: {
+    path: "/wallets.TransactionsService/GetTransactions" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: GetTransactionsInput): Buffer => Buffer.from(GetTransactionsInput.encode(value).finish()),
+    requestDeserialize: (value: Buffer): GetTransactionsInput => GetTransactionsInput.decode(value),
+    responseSerialize: (value: GetTransactionsResponse): Buffer =>
+      Buffer.from(GetTransactionsResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): GetTransactionsResponse => GetTransactionsResponse.decode(value),
+  },
+} as const;
+
+export interface TransactionsServiceServer extends UntypedServiceImplementation {
+  getTransactions: handleUnaryCall<GetTransactionsInput, GetTransactionsResponse>;
+}
+
+export interface TransactionsServiceClient extends Client {
+  getTransactions(
+    request: GetTransactionsInput,
+    callback: (error: ServiceError | null, response: GetTransactionsResponse) => void,
+  ): ClientUnaryCall;
+  getTransactions(
+    request: GetTransactionsInput,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: GetTransactionsResponse) => void,
+  ): ClientUnaryCall;
+  getTransactions(
+    request: GetTransactionsInput,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: GetTransactionsResponse) => void,
+  ): ClientUnaryCall;
+}
+
+export const TransactionsServiceClient = makeGenericClientConstructor(
+  TransactionsServiceService,
+  "wallets.TransactionsService",
+) as unknown as {
+  new (address: string, credentials: ChannelCredentials, options?: Partial<ClientOptions>): TransactionsServiceClient;
+  service: typeof TransactionsServiceService;
   serviceName: string;
 };
 

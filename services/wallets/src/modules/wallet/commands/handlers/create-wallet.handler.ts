@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { Inject } from '@nestjs/common';
+import { Inject, InternalServerErrorException } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import {
   LOGGING_SERVICE_TOKEN,
@@ -31,7 +31,7 @@ export class CreateWalletHandler
 
     const userId = meta.userId;
     if (!userId) {
-      throw new ValidationError('User identity could not be resolved from request context');
+      throw new InternalServerErrorException('User identity could not be resolved from request context');
     }
 
     this.logger.log({

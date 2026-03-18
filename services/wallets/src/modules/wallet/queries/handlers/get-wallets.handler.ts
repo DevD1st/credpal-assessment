@@ -1,21 +1,21 @@
-import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { Inject, InternalServerErrorException } from '@nestjs/common';
+import { IQueryHandler, QueryHandler } from "@nestjs/cqrs";
+import { Inject, InternalServerErrorException } from "@nestjs/common";
 import {
   LOGGING_SERVICE_TOKEN,
   LoggingService,
-} from '@credpal-fx-trading-app/runtime';
-import { ValidationError } from '@credpal-fx-trading-app/common';
-import { Wallets } from '@credpal-fx-trading-app/proto';
-import { GetWalletsQuery } from '../impl.js';
+} from "@credpal-fx-trading-app/runtime";
+import { Wallets } from "@credpal-fx-trading-app/proto";
+import { GetWalletsQuery } from "../impl.js";
 import {
   IWalletRepository,
   WALLET_REPOSITORY_TOKEN,
-} from '../../repositories/wallet.repository.interface.js';
+} from "../../repositories/wallet.repository.interface.js";
 
 @QueryHandler(GetWalletsQuery)
-export class GetWalletsHandler
-  implements IQueryHandler<GetWalletsQuery, Wallets.Wallets>
-{
+export class GetWalletsHandler implements IQueryHandler<
+  GetWalletsQuery,
+  Wallets.Wallets
+> {
   constructor(
     @Inject(LOGGING_SERVICE_TOKEN) private readonly logger: LoggingService,
     @Inject(WALLET_REPOSITORY_TOKEN)
@@ -27,11 +27,13 @@ export class GetWalletsHandler
 
     const userId = meta.userId;
     if (!userId) {
-      throw new InternalServerErrorException('User identity could not be resolved from request context');
+      throw new InternalServerErrorException(
+        "User identity could not be resolved from request context",
+      );
     }
 
     this.logger.log({
-      message: 'Fetching wallets',
+      message: "Fetching wallets",
       userId,
       filters: request,
     });

@@ -7,3 +7,10 @@ export class CreateWalletCommand {
     public readonly meta: ClientMetadata,
   ) {}
 }
+
+export class FundWalletCommand {
+  constructor(
+    public readonly request: Wallets.FundWalletInput,
+    public readonly meta: ClientMetadata,
+  ) {}
+}

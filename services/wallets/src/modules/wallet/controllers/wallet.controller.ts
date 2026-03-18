@@ -7,7 +7,7 @@ import {
 import { Controller, UseFilters } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import { GrpcMethod, Payload } from "@nestjs/microservices";
-import { CreateWalletCommand } from "../commands/impl.js";
+import { CreateWalletCommand, FundWalletCommand } from "../commands/impl.js";
 import { GetWalletsQuery } from "../queries/impl.js";
 
 @Controller()
@@ -35,6 +35,17 @@ export class WalletController {
   ): Promise<Wallets.GetWalletsResponse> {
     const data = await this.queryBus.execute(
       new GetWalletsQuery(request, meta),
+    );
+    return { data };
+  }
+
+  @GrpcMethod("WalletsService", "FundWallet")
+  async fundWallet(
+    @Payload() request: Wallets.FundWalletInput,
+    @ContextGrpc() meta: ClientMetadata,
+  ): Promise<Wallets.FundWalletResponse> {
+    const data = await this.commandBus.execute(
+      new FundWalletCommand(request, meta),
     );
     return { data };
   }

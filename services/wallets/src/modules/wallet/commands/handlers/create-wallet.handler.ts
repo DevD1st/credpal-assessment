@@ -1,24 +1,24 @@
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { Inject, InternalServerErrorException } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
+import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
+import { Inject, InternalServerErrorException } from "@nestjs/common";
+import { ClientProxy } from "@nestjs/microservices";
 import {
   LOGGING_SERVICE_TOKEN,
   LoggingService,
-} from '@credpal-fx-trading-app/runtime';
-import { ValidationError } from '@credpal-fx-trading-app/common';
-import { RABBITMQ_TOPICS } from '@credpal-fx-trading-app/constants';
-import { Wallets } from '@credpal-fx-trading-app/proto';
-import { CreateWalletCommand } from '../impl.js';
+} from "@credpal-fx-trading-app/runtime";
+import { RABBITMQ_TOPICS } from "@credpal-fx-trading-app/constants";
+import { Wallets } from "@credpal-fx-trading-app/proto";
+import { CreateWalletCommand } from "../impl.js";
 import {
   IWalletRepository,
   WALLET_REPOSITORY_TOKEN,
-} from '../../repositories/wallet.repository.interface.js';
-import { RABBIT_MQ_CLIENT } from '../../../../utils/index.js';
+} from "../../repositories/wallet.repository.interface.js";
+import { RABBIT_MQ_CLIENT } from "../../../../utils/index.js";
 
 @CommandHandler(CreateWalletCommand)
-export class CreateWalletHandler
-  implements ICommandHandler<CreateWalletCommand, Wallets.Wallet>
-{
+export class CreateWalletHandler implements ICommandHandler<
+  CreateWalletCommand,
+  Wallets.Wallet
+> {
   constructor(
     @Inject(LOGGING_SERVICE_TOKEN) private readonly logger: LoggingService,
     @Inject(WALLET_REPOSITORY_TOKEN)
@@ -31,11 +31,13 @@ export class CreateWalletHandler
 
     const userId = meta.userId;
     if (!userId) {
-      throw new InternalServerErrorException('User identity could not be resolved from request context');
+      throw new InternalServerErrorException(
+        "User identity could not be resolved from request context",
+      );
     }
 
     this.logger.log({
-      message: 'Creating wallet',
+      message: "Creating wallet",
       userId,
       currency: request.currency,
     });
@@ -46,7 +48,7 @@ export class CreateWalletHandler
     });
 
     this.logger.log({
-      message: 'Wallet created successfully',
+      message: "Wallet created successfully",
       walletId: wallet.id,
       userId,
       currency: wallet.currency,

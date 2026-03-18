@@ -4,6 +4,9 @@ import { LoggingModule } from "@credpal-fx-trading-app/runtime";
 import { getDefaultLoggerOpts } from "@credpal-fx-trading-app/common";
 import { getConfig } from "./utils/index.js";
 import { ConfigModule } from "@nestjs/config";
+import { CacheModule } from "@nestjs/cache-manager";
+import { BullModule } from "@nestjs/bullmq";
+import KeyvRedis, { RedisClientOptions } from "@keyv/redis";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -20,6 +23,50 @@ const __dirname = path.dirname(__filename);
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ["../../env/root.env", "../../env/wallets.env"],
+    }),
+    CacheModule.registerAsync({
+      isGlobal: true,
+      useFactory() {
+        const environment = getConfig("environment");
+        const host = getConfig("datastores.redis.host");
+        const port = getConfig("datastores.redis.port");
+
+        const protocol = environment === "development" ? "redis" : "rediss";
+        const redisUri = `${protocol}://${host}:${port}`;
+
+        const redisOption: RedisClientOptions = {
+          url: redisUri,
+          socket:
+            environment === "development"
+              ? undefined
+              : {
+                  tls: true,
+                  rejectUnauthorized: false,
+                },
+        };
+
+        const redisConnection = new KeyvRedis(redisOption as any);
+        redisConnection.on("error", (error: any) => console.error(error));
+
+        return {
+          stores: [redisConnection],
+        };
+      },
+    }),
+    BullModule.forRootAsync({
+      useFactory() {
+        const environment = getConfig("environment");
+        const host = getConfig("datastores.redis.host");
+        const port = getConfig("datastores.redis.port");
+
+        return {
+          connection: {
+            host,
+            port,
+            tls: environment === "development" ? undefined : { rejectUnauthorized: false },
+          },
+        };
+      },
     }),
     TypeOrmModule.forRootAsync({
       useFactory: () => {

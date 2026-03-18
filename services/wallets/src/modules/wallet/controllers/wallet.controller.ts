@@ -7,7 +7,7 @@ import {
 import { Controller, UseFilters } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import { GrpcMethod, Payload } from "@nestjs/microservices";
-import { CreateWalletCommand, FundWalletCommand } from "../commands/impl.js";
+import { CreateWalletCommand, FundWalletCommand, TradeCurrencyCommand } from "../commands/impl.js";
 import { GetWalletsQuery } from "../queries/impl.js";
 import { CreateQuoteCommand } from "../../fx/commands/impl.js";
 
@@ -59,6 +59,18 @@ export class WalletController {
     const data = await this.commandBus.execute(
       new CreateQuoteCommand(request, meta),
     );
-    return { data } as any; // Due to oneof typing differences
+    return { data } as any;
+  }
+
+  @GrpcMethod("WalletsService", "TradeCurrency")
+  async tradeCurrency(
+    @Payload() request: Wallets.TradeCurrencyInput,
+    @ContextGrpc() meta: ClientMetadata,
+  ): Promise<Wallets.TradeCurrencyResponse> {
+    const data = await this.commandBus.execute(
+      new TradeCurrencyCommand(request, meta),
+    );
+    return data as any; // Handler returning `{ data: ... }`
   }
 }
+

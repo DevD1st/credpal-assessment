@@ -8,11 +8,12 @@ import { WALLET_REPOSITORY_TOKEN } from "./repositories/wallet.repository.interf
 import { WalletController } from "./controllers/wallet.controller.js";
 import { CreateWalletHandler } from "./commands/handlers/create-wallet.handler.js";
 import { FundWalletHandler } from "./commands/handlers/fund-wallet.handler.js";
+import { TradeCurrencyHandler } from "./commands/handlers/trade-currency.handler.js";
 import { GetWalletsHandler } from "./queries/handlers/get-wallets.handler.js";
 import { RABBIT_MQ_CLIENT } from "../../utils/index.js";
 import { getConfig } from "../../utils/index.js";
 
-const CommandHandlers = [CreateWalletHandler, FundWalletHandler];
+const CommandHandlers = [CreateWalletHandler, FundWalletHandler, TradeCurrencyHandler];
 const QueryHandlers = [GetWalletsHandler];
 
 @Module({

@@ -6,11 +6,12 @@ import { TRANSACTION_REPOSITORY_TOKEN } from "./repositories/transaction.reposit
 import { LedgerRepository } from "./repositories/ledger.repository.js";
 import { LEDGER_REPOSITORY_TOKEN } from "./repositories/ledger.repository.interface.js";
 import { ProcessFundWalletHandler } from "./commands/handlers/process-fund-wallet.handler.js";
+import { ProcessTradeCurrencyHandler } from "./commands/handlers/process-trade-currency.handler.js";
 import { TransactionWorker } from "./services/transaction.worker.js";
 import { RABBIT_MQ_CLIENT } from "../../utils/index.js";
 import { getConfig } from "../../utils/index.js";
 
-const CommandHandlers = [ProcessFundWalletHandler];
+const CommandHandlers = [ProcessFundWalletHandler, ProcessTradeCurrencyHandler];
 const QueryHandlers: any[] = [];
 
 @Module({

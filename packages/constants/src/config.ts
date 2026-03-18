@@ -4,6 +4,7 @@ export const RABBITMQ_TOPICS = {
   WALLET_CREATED: "wallet.created",
   WALLET_FUNDED: "wallet.funded",
   EXCHANGE_RATE_FETCHED: "exchange.rate.fetched",
+  CURRENCY_TRADED: "currency.traded",
 } as const;
 
 export const REDIS_KEYS = {

@@ -14,3 +14,10 @@ export class FundWalletCommand {
     public readonly meta: ClientMetadata,
   ) {}
 }
+
+export class TradeCurrencyCommand {
+  constructor(
+    public readonly request: Wallets.TradeCurrencyInput,
+    public readonly meta: ClientMetadata,
+  ) {}
+}

@@ -39,6 +39,10 @@ export class WalletRepository extends Repository<Wallet> implements IWalletRepos
     return this.findOne({ where: { id } });
   }
 
+  async findByUserId(userId: string): Promise<Wallet[]> {
+    return this.find({ where: { userId } });
+  }
+
   async getWallets(
     userId: string,
     filters: {

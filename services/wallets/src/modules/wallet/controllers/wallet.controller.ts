@@ -9,6 +9,7 @@ import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import { GrpcMethod, Payload } from "@nestjs/microservices";
 import { CreateWalletCommand, FundWalletCommand } from "../commands/impl.js";
 import { GetWalletsQuery } from "../queries/impl.js";
+import { CreateQuoteCommand } from "../../fx/commands/impl.js";
 
 @Controller()
 @UseFilters(new GrpcExceptionFilter())
@@ -48,5 +49,16 @@ export class WalletController {
       new FundWalletCommand(request, meta),
     );
     return { data };
+  }
+
+  @GrpcMethod("WalletsService", "CreateQuote")
+  async createQuote(
+    @Payload() request: Wallets.CreateQuoteInput,
+    @ContextGrpc() meta: ClientMetadata,
+  ): Promise<Wallets.CreateQuoteResponse> {
+    const data = await this.commandBus.execute(
+      new CreateQuoteCommand(request, meta),
+    );
+    return { data } as any; // Due to oneof typing differences
   }
 }

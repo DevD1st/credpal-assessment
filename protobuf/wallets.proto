@@ -8,6 +8,8 @@ service WalletsService {
   rpc CreateWallet(CreateWalletInput) returns (CreateWalletResponse);
   rpc GetWallets(GetWalletsInput) returns (GetWalletsResponse);
   rpc FundWallet(FundWalletInput) returns (FundWalletResponse);
+  rpc CreateQuote(CreateQuoteInput) returns (CreateQuoteResponse);
+  rpc TradeCurrency(TradeCurrencyInput) returns (TradeCurrencyResponse);
 }
 
 // ------------------------------------------
@@ -29,6 +31,18 @@ message FundWalletInput {
   // expected to be in lowest currency unit
   int64 amount = 2;
   string idempotency_key = 3;
+}
+
+message CreateQuoteInput {
+  string base_currency = 1;
+  string target_currency = 2;
+}
+
+message TradeCurrencyInput {
+  string quote_id = 1;
+  string base_currency = 2;
+  string target_currency = 3;
+  int64 amount = 4;
 }
 
 // ------------------------------------------
@@ -60,6 +74,28 @@ message Wallets {
   int32 total = 2;
 }
 
+message CreateQuoteResponse {
+  oneof response {
+    Quote data = 1;
+    common.Error error = 2;
+  }
+}
+
+message Quote {
+  string id = 1;
+  string base_currency = 2;
+  string target_currency = 3;
+  int64 amount = 4;
+  string expires_at = 5;
+}
+
+message TradeCurrencyResponse {
+  oneof response {
+    Transaction data = 1;
+    common.Error error = 2;
+  }
+}
+
 // ------------------------------------------
 // Data Models
 // ------------------------------------------
@@ -71,4 +107,23 @@ message Wallet {
   string status = 5;
   string created_at = 6;
   string updated_at = 7;
+}
+
+message Transaction {
+  string id = 1;
+  string user_id = 2;
+  string base_wallet_id = 3;
+  string target_wallet_id = 4;
+  string type = 5;
+  string base_currency = 6;
+  string target_currency = 7;
+  int64 base_amount = 8;
+  int64 target_amount = 9;
+  string status = 10;
+  int64 exchange_rate = 11;
+  int64 exchange_rate_with_spread = 12;
+  int32 percentage_spread = 13;
+  string reference = 14;
+  string created_at = 15;
+  string updated_at = 16;
 }

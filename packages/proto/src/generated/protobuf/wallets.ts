@@ -45,6 +45,18 @@ export interface FundWalletInput {
   idempotencyKey: string;
 }
 
+export interface CreateQuoteInput {
+  baseCurrency: string;
+  targetCurrency: string;
+}
+
+export interface TradeCurrencyInput {
+  quoteId: string;
+  baseCurrency: string;
+  targetCurrency: string;
+  amount: number;
+}
+
 /**
  * ------------------------------------------
  * Responses
@@ -70,6 +82,24 @@ export interface Wallets {
   total: number;
 }
 
+export interface CreateQuoteResponse {
+  data?: Quote | undefined;
+  error?: Error | undefined;
+}
+
+export interface Quote {
+  id: string;
+  baseCurrency: string;
+  targetCurrency: string;
+  amount: number;
+  expiresAt: string;
+}
+
+export interface TradeCurrencyResponse {
+  data?: Transaction | undefined;
+  error?: Error | undefined;
+}
+
 /**
  * ------------------------------------------
  * Data Models
@@ -81,6 +111,25 @@ export interface Wallet {
   currency: string;
   balance: number;
   status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Transaction {
+  id: string;
+  userId: string;
+  baseWalletId: string;
+  targetWalletId: string;
+  type: string;
+  baseCurrency: string;
+  targetCurrency: string;
+  baseAmount: number;
+  targetAmount: number;
+  status: string;
+  exchangeRate: number;
+  exchangeRateWithSpread: number;
+  percentageSpread: number;
+  reference: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -347,6 +396,210 @@ export const FundWalletInput: MessageFns<FundWalletInput> = {
     message.walletId = object.walletId ?? "";
     message.amount = object.amount ?? 0;
     message.idempotencyKey = object.idempotencyKey ?? "";
+    return message;
+  },
+};
+
+function createBaseCreateQuoteInput(): CreateQuoteInput {
+  return { baseCurrency: "", targetCurrency: "" };
+}
+
+export const CreateQuoteInput: MessageFns<CreateQuoteInput> = {
+  encode(message: CreateQuoteInput, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.baseCurrency !== "") {
+      writer.uint32(10).string(message.baseCurrency);
+    }
+    if (message.targetCurrency !== "") {
+      writer.uint32(18).string(message.targetCurrency);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CreateQuoteInput {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCreateQuoteInput();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.baseCurrency = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.targetCurrency = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CreateQuoteInput {
+    return {
+      baseCurrency: isSet(object.baseCurrency)
+        ? globalThis.String(object.baseCurrency)
+        : isSet(object.base_currency)
+        ? globalThis.String(object.base_currency)
+        : "",
+      targetCurrency: isSet(object.targetCurrency)
+        ? globalThis.String(object.targetCurrency)
+        : isSet(object.target_currency)
+        ? globalThis.String(object.target_currency)
+        : "",
+    };
+  },
+
+  toJSON(message: CreateQuoteInput): unknown {
+    const obj: any = {};
+    if (message.baseCurrency !== "") {
+      obj.baseCurrency = message.baseCurrency;
+    }
+    if (message.targetCurrency !== "") {
+      obj.targetCurrency = message.targetCurrency;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<CreateQuoteInput>): CreateQuoteInput {
+    return CreateQuoteInput.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<CreateQuoteInput>): CreateQuoteInput {
+    const message = createBaseCreateQuoteInput();
+    message.baseCurrency = object.baseCurrency ?? "";
+    message.targetCurrency = object.targetCurrency ?? "";
+    return message;
+  },
+};
+
+function createBaseTradeCurrencyInput(): TradeCurrencyInput {
+  return { quoteId: "", baseCurrency: "", targetCurrency: "", amount: 0 };
+}
+
+export const TradeCurrencyInput: MessageFns<TradeCurrencyInput> = {
+  encode(message: TradeCurrencyInput, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.quoteId !== "") {
+      writer.uint32(10).string(message.quoteId);
+    }
+    if (message.baseCurrency !== "") {
+      writer.uint32(18).string(message.baseCurrency);
+    }
+    if (message.targetCurrency !== "") {
+      writer.uint32(26).string(message.targetCurrency);
+    }
+    if (message.amount !== 0) {
+      writer.uint32(32).int64(message.amount);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): TradeCurrencyInput {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseTradeCurrencyInput();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.quoteId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.baseCurrency = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.targetCurrency = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.amount = longToNumber(reader.int64());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): TradeCurrencyInput {
+    return {
+      quoteId: isSet(object.quoteId)
+        ? globalThis.String(object.quoteId)
+        : isSet(object.quote_id)
+        ? globalThis.String(object.quote_id)
+        : "",
+      baseCurrency: isSet(object.baseCurrency)
+        ? globalThis.String(object.baseCurrency)
+        : isSet(object.base_currency)
+        ? globalThis.String(object.base_currency)
+        : "",
+      targetCurrency: isSet(object.targetCurrency)
+        ? globalThis.String(object.targetCurrency)
+        : isSet(object.target_currency)
+        ? globalThis.String(object.target_currency)
+        : "",
+      amount: isSet(object.amount) ? globalThis.Number(object.amount) : 0,
+    };
+  },
+
+  toJSON(message: TradeCurrencyInput): unknown {
+    const obj: any = {};
+    if (message.quoteId !== "") {
+      obj.quoteId = message.quoteId;
+    }
+    if (message.baseCurrency !== "") {
+      obj.baseCurrency = message.baseCurrency;
+    }
+    if (message.targetCurrency !== "") {
+      obj.targetCurrency = message.targetCurrency;
+    }
+    if (message.amount !== 0) {
+      obj.amount = Math.round(message.amount);
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<TradeCurrencyInput>): TradeCurrencyInput {
+    return TradeCurrencyInput.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<TradeCurrencyInput>): TradeCurrencyInput {
+    const message = createBaseTradeCurrencyInput();
+    message.quoteId = object.quoteId ?? "";
+    message.baseCurrency = object.baseCurrency ?? "";
+    message.targetCurrency = object.targetCurrency ?? "";
+    message.amount = object.amount ?? 0;
     return message;
   },
 };
@@ -655,6 +908,296 @@ export const Wallets: MessageFns<Wallets> = {
   },
 };
 
+function createBaseCreateQuoteResponse(): CreateQuoteResponse {
+  return { data: undefined, error: undefined };
+}
+
+export const CreateQuoteResponse: MessageFns<CreateQuoteResponse> = {
+  encode(message: CreateQuoteResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.data !== undefined) {
+      Quote.encode(message.data, writer.uint32(10).fork()).join();
+    }
+    if (message.error !== undefined) {
+      Error.encode(message.error, writer.uint32(18).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CreateQuoteResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCreateQuoteResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.data = Quote.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.error = Error.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CreateQuoteResponse {
+    return {
+      data: isSet(object.data) ? Quote.fromJSON(object.data) : undefined,
+      error: isSet(object.error) ? Error.fromJSON(object.error) : undefined,
+    };
+  },
+
+  toJSON(message: CreateQuoteResponse): unknown {
+    const obj: any = {};
+    if (message.data !== undefined) {
+      obj.data = Quote.toJSON(message.data);
+    }
+    if (message.error !== undefined) {
+      obj.error = Error.toJSON(message.error);
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<CreateQuoteResponse>): CreateQuoteResponse {
+    return CreateQuoteResponse.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<CreateQuoteResponse>): CreateQuoteResponse {
+    const message = createBaseCreateQuoteResponse();
+    message.data = (object.data !== undefined && object.data !== null) ? Quote.fromPartial(object.data) : undefined;
+    message.error = (object.error !== undefined && object.error !== null) ? Error.fromPartial(object.error) : undefined;
+    return message;
+  },
+};
+
+function createBaseQuote(): Quote {
+  return { id: "", baseCurrency: "", targetCurrency: "", amount: 0, expiresAt: "" };
+}
+
+export const Quote: MessageFns<Quote> = {
+  encode(message: Quote, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.id !== "") {
+      writer.uint32(10).string(message.id);
+    }
+    if (message.baseCurrency !== "") {
+      writer.uint32(18).string(message.baseCurrency);
+    }
+    if (message.targetCurrency !== "") {
+      writer.uint32(26).string(message.targetCurrency);
+    }
+    if (message.amount !== 0) {
+      writer.uint32(32).int64(message.amount);
+    }
+    if (message.expiresAt !== "") {
+      writer.uint32(42).string(message.expiresAt);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): Quote {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseQuote();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.id = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.baseCurrency = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.targetCurrency = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.amount = longToNumber(reader.int64());
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.expiresAt = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): Quote {
+    return {
+      id: isSet(object.id) ? globalThis.String(object.id) : "",
+      baseCurrency: isSet(object.baseCurrency)
+        ? globalThis.String(object.baseCurrency)
+        : isSet(object.base_currency)
+        ? globalThis.String(object.base_currency)
+        : "",
+      targetCurrency: isSet(object.targetCurrency)
+        ? globalThis.String(object.targetCurrency)
+        : isSet(object.target_currency)
+        ? globalThis.String(object.target_currency)
+        : "",
+      amount: isSet(object.amount) ? globalThis.Number(object.amount) : 0,
+      expiresAt: isSet(object.expiresAt)
+        ? globalThis.String(object.expiresAt)
+        : isSet(object.expires_at)
+        ? globalThis.String(object.expires_at)
+        : "",
+    };
+  },
+
+  toJSON(message: Quote): unknown {
+    const obj: any = {};
+    if (message.id !== "") {
+      obj.id = message.id;
+    }
+    if (message.baseCurrency !== "") {
+      obj.baseCurrency = message.baseCurrency;
+    }
+    if (message.targetCurrency !== "") {
+      obj.targetCurrency = message.targetCurrency;
+    }
+    if (message.amount !== 0) {
+      obj.amount = Math.round(message.amount);
+    }
+    if (message.expiresAt !== "") {
+      obj.expiresAt = message.expiresAt;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<Quote>): Quote {
+    return Quote.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<Quote>): Quote {
+    const message = createBaseQuote();
+    message.id = object.id ?? "";
+    message.baseCurrency = object.baseCurrency ?? "";
+    message.targetCurrency = object.targetCurrency ?? "";
+    message.amount = object.amount ?? 0;
+    message.expiresAt = object.expiresAt ?? "";
+    return message;
+  },
+};
+
+function createBaseTradeCurrencyResponse(): TradeCurrencyResponse {
+  return { data: undefined, error: undefined };
+}
+
+export const TradeCurrencyResponse: MessageFns<TradeCurrencyResponse> = {
+  encode(message: TradeCurrencyResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.data !== undefined) {
+      Transaction.encode(message.data, writer.uint32(10).fork()).join();
+    }
+    if (message.error !== undefined) {
+      Error.encode(message.error, writer.uint32(18).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): TradeCurrencyResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseTradeCurrencyResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.data = Transaction.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.error = Error.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): TradeCurrencyResponse {
+    return {
+      data: isSet(object.data) ? Transaction.fromJSON(object.data) : undefined,
+      error: isSet(object.error) ? Error.fromJSON(object.error) : undefined,
+    };
+  },
+
+  toJSON(message: TradeCurrencyResponse): unknown {
+    const obj: any = {};
+    if (message.data !== undefined) {
+      obj.data = Transaction.toJSON(message.data);
+    }
+    if (message.error !== undefined) {
+      obj.error = Error.toJSON(message.error);
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<TradeCurrencyResponse>): TradeCurrencyResponse {
+    return TradeCurrencyResponse.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<TradeCurrencyResponse>): TradeCurrencyResponse {
+    const message = createBaseTradeCurrencyResponse();
+    message.data = (object.data !== undefined && object.data !== null)
+      ? Transaction.fromPartial(object.data)
+      : undefined;
+    message.error = (object.error !== undefined && object.error !== null) ? Error.fromPartial(object.error) : undefined;
+    return message;
+  },
+};
+
 function createBaseWallet(): Wallet {
   return { id: "", userId: "", currency: "", balance: 0, status: "", createdAt: "", updatedAt: "" };
 }
@@ -823,6 +1366,371 @@ export const Wallet: MessageFns<Wallet> = {
   },
 };
 
+function createBaseTransaction(): Transaction {
+  return {
+    id: "",
+    userId: "",
+    baseWalletId: "",
+    targetWalletId: "",
+    type: "",
+    baseCurrency: "",
+    targetCurrency: "",
+    baseAmount: 0,
+    targetAmount: 0,
+    status: "",
+    exchangeRate: 0,
+    exchangeRateWithSpread: 0,
+    percentageSpread: 0,
+    reference: "",
+    createdAt: "",
+    updatedAt: "",
+  };
+}
+
+export const Transaction: MessageFns<Transaction> = {
+  encode(message: Transaction, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.id !== "") {
+      writer.uint32(10).string(message.id);
+    }
+    if (message.userId !== "") {
+      writer.uint32(18).string(message.userId);
+    }
+    if (message.baseWalletId !== "") {
+      writer.uint32(26).string(message.baseWalletId);
+    }
+    if (message.targetWalletId !== "") {
+      writer.uint32(34).string(message.targetWalletId);
+    }
+    if (message.type !== "") {
+      writer.uint32(42).string(message.type);
+    }
+    if (message.baseCurrency !== "") {
+      writer.uint32(50).string(message.baseCurrency);
+    }
+    if (message.targetCurrency !== "") {
+      writer.uint32(58).string(message.targetCurrency);
+    }
+    if (message.baseAmount !== 0) {
+      writer.uint32(64).int64(message.baseAmount);
+    }
+    if (message.targetAmount !== 0) {
+      writer.uint32(72).int64(message.targetAmount);
+    }
+    if (message.status !== "") {
+      writer.uint32(82).string(message.status);
+    }
+    if (message.exchangeRate !== 0) {
+      writer.uint32(88).int64(message.exchangeRate);
+    }
+    if (message.exchangeRateWithSpread !== 0) {
+      writer.uint32(96).int64(message.exchangeRateWithSpread);
+    }
+    if (message.percentageSpread !== 0) {
+      writer.uint32(104).int32(message.percentageSpread);
+    }
+    if (message.reference !== "") {
+      writer.uint32(114).string(message.reference);
+    }
+    if (message.createdAt !== "") {
+      writer.uint32(122).string(message.createdAt);
+    }
+    if (message.updatedAt !== "") {
+      writer.uint32(130).string(message.updatedAt);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): Transaction {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseTransaction();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.id = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.baseWalletId = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.targetWalletId = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.type = reader.string();
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.baseCurrency = reader.string();
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.targetCurrency = reader.string();
+          continue;
+        }
+        case 8: {
+          if (tag !== 64) {
+            break;
+          }
+
+          message.baseAmount = longToNumber(reader.int64());
+          continue;
+        }
+        case 9: {
+          if (tag !== 72) {
+            break;
+          }
+
+          message.targetAmount = longToNumber(reader.int64());
+          continue;
+        }
+        case 10: {
+          if (tag !== 82) {
+            break;
+          }
+
+          message.status = reader.string();
+          continue;
+        }
+        case 11: {
+          if (tag !== 88) {
+            break;
+          }
+
+          message.exchangeRate = longToNumber(reader.int64());
+          continue;
+        }
+        case 12: {
+          if (tag !== 96) {
+            break;
+          }
+
+          message.exchangeRateWithSpread = longToNumber(reader.int64());
+          continue;
+        }
+        case 13: {
+          if (tag !== 104) {
+            break;
+          }
+
+          message.percentageSpread = reader.int32();
+          continue;
+        }
+        case 14: {
+          if (tag !== 114) {
+            break;
+          }
+
+          message.reference = reader.string();
+          continue;
+        }
+        case 15: {
+          if (tag !== 122) {
+            break;
+          }
+
+          message.createdAt = reader.string();
+          continue;
+        }
+        case 16: {
+          if (tag !== 130) {
+            break;
+          }
+
+          message.updatedAt = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): Transaction {
+    return {
+      id: isSet(object.id) ? globalThis.String(object.id) : "",
+      userId: isSet(object.userId)
+        ? globalThis.String(object.userId)
+        : isSet(object.user_id)
+        ? globalThis.String(object.user_id)
+        : "",
+      baseWalletId: isSet(object.baseWalletId)
+        ? globalThis.String(object.baseWalletId)
+        : isSet(object.base_wallet_id)
+        ? globalThis.String(object.base_wallet_id)
+        : "",
+      targetWalletId: isSet(object.targetWalletId)
+        ? globalThis.String(object.targetWalletId)
+        : isSet(object.target_wallet_id)
+        ? globalThis.String(object.target_wallet_id)
+        : "",
+      type: isSet(object.type) ? globalThis.String(object.type) : "",
+      baseCurrency: isSet(object.baseCurrency)
+        ? globalThis.String(object.baseCurrency)
+        : isSet(object.base_currency)
+        ? globalThis.String(object.base_currency)
+        : "",
+      targetCurrency: isSet(object.targetCurrency)
+        ? globalThis.String(object.targetCurrency)
+        : isSet(object.target_currency)
+        ? globalThis.String(object.target_currency)
+        : "",
+      baseAmount: isSet(object.baseAmount)
+        ? globalThis.Number(object.baseAmount)
+        : isSet(object.base_amount)
+        ? globalThis.Number(object.base_amount)
+        : 0,
+      targetAmount: isSet(object.targetAmount)
+        ? globalThis.Number(object.targetAmount)
+        : isSet(object.target_amount)
+        ? globalThis.Number(object.target_amount)
+        : 0,
+      status: isSet(object.status) ? globalThis.String(object.status) : "",
+      exchangeRate: isSet(object.exchangeRate)
+        ? globalThis.Number(object.exchangeRate)
+        : isSet(object.exchange_rate)
+        ? globalThis.Number(object.exchange_rate)
+        : 0,
+      exchangeRateWithSpread: isSet(object.exchangeRateWithSpread)
+        ? globalThis.Number(object.exchangeRateWithSpread)
+        : isSet(object.exchange_rate_with_spread)
+        ? globalThis.Number(object.exchange_rate_with_spread)
+        : 0,
+      percentageSpread: isSet(object.percentageSpread)
+        ? globalThis.Number(object.percentageSpread)
+        : isSet(object.percentage_spread)
+        ? globalThis.Number(object.percentage_spread)
+        : 0,
+      reference: isSet(object.reference) ? globalThis.String(object.reference) : "",
+      createdAt: isSet(object.createdAt)
+        ? globalThis.String(object.createdAt)
+        : isSet(object.created_at)
+        ? globalThis.String(object.created_at)
+        : "",
+      updatedAt: isSet(object.updatedAt)
+        ? globalThis.String(object.updatedAt)
+        : isSet(object.updated_at)
+        ? globalThis.String(object.updated_at)
+        : "",
+    };
+  },
+
+  toJSON(message: Transaction): unknown {
+    const obj: any = {};
+    if (message.id !== "") {
+      obj.id = message.id;
+    }
+    if (message.userId !== "") {
+      obj.userId = message.userId;
+    }
+    if (message.baseWalletId !== "") {
+      obj.baseWalletId = message.baseWalletId;
+    }
+    if (message.targetWalletId !== "") {
+      obj.targetWalletId = message.targetWalletId;
+    }
+    if (message.type !== "") {
+      obj.type = message.type;
+    }
+    if (message.baseCurrency !== "") {
+      obj.baseCurrency = message.baseCurrency;
+    }
+    if (message.targetCurrency !== "") {
+      obj.targetCurrency = message.targetCurrency;
+    }
+    if (message.baseAmount !== 0) {
+      obj.baseAmount = Math.round(message.baseAmount);
+    }
+    if (message.targetAmount !== 0) {
+      obj.targetAmount = Math.round(message.targetAmount);
+    }
+    if (message.status !== "") {
+      obj.status = message.status;
+    }
+    if (message.exchangeRate !== 0) {
+      obj.exchangeRate = Math.round(message.exchangeRate);
+    }
+    if (message.exchangeRateWithSpread !== 0) {
+      obj.exchangeRateWithSpread = Math.round(message.exchangeRateWithSpread);
+    }
+    if (message.percentageSpread !== 0) {
+      obj.percentageSpread = Math.round(message.percentageSpread);
+    }
+    if (message.reference !== "") {
+      obj.reference = message.reference;
+    }
+    if (message.createdAt !== "") {
+      obj.createdAt = message.createdAt;
+    }
+    if (message.updatedAt !== "") {
+      obj.updatedAt = message.updatedAt;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<Transaction>): Transaction {
+    return Transaction.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<Transaction>): Transaction {
+    const message = createBaseTransaction();
+    message.id = object.id ?? "";
+    message.userId = object.userId ?? "";
+    message.baseWalletId = object.baseWalletId ?? "";
+    message.targetWalletId = object.targetWalletId ?? "";
+    message.type = object.type ?? "";
+    message.baseCurrency = object.baseCurrency ?? "";
+    message.targetCurrency = object.targetCurrency ?? "";
+    message.baseAmount = object.baseAmount ?? 0;
+    message.targetAmount = object.targetAmount ?? 0;
+    message.status = object.status ?? "";
+    message.exchangeRate = object.exchangeRate ?? 0;
+    message.exchangeRateWithSpread = object.exchangeRateWithSpread ?? 0;
+    message.percentageSpread = object.percentageSpread ?? 0;
+    message.reference = object.reference ?? "";
+    message.createdAt = object.createdAt ?? "";
+    message.updatedAt = object.updatedAt ?? "";
+    return message;
+  },
+};
+
 export type WalletsServiceService = typeof WalletsServiceService;
 export const WalletsServiceService = {
   createWallet: {
@@ -853,12 +1761,33 @@ export const WalletsServiceService = {
     responseSerialize: (value: FundWalletResponse): Buffer => Buffer.from(FundWalletResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer): FundWalletResponse => FundWalletResponse.decode(value),
   },
+  createQuote: {
+    path: "/wallets.WalletsService/CreateQuote" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: CreateQuoteInput): Buffer => Buffer.from(CreateQuoteInput.encode(value).finish()),
+    requestDeserialize: (value: Buffer): CreateQuoteInput => CreateQuoteInput.decode(value),
+    responseSerialize: (value: CreateQuoteResponse): Buffer => Buffer.from(CreateQuoteResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): CreateQuoteResponse => CreateQuoteResponse.decode(value),
+  },
+  tradeCurrency: {
+    path: "/wallets.WalletsService/TradeCurrency" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: TradeCurrencyInput): Buffer => Buffer.from(TradeCurrencyInput.encode(value).finish()),
+    requestDeserialize: (value: Buffer): TradeCurrencyInput => TradeCurrencyInput.decode(value),
+    responseSerialize: (value: TradeCurrencyResponse): Buffer =>
+      Buffer.from(TradeCurrencyResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): TradeCurrencyResponse => TradeCurrencyResponse.decode(value),
+  },
 } as const;
 
 export interface WalletsServiceServer extends UntypedServiceImplementation {
   createWallet: handleUnaryCall<CreateWalletInput, CreateWalletResponse>;
   getWallets: handleUnaryCall<GetWalletsInput, GetWalletsResponse>;
   fundWallet: handleUnaryCall<FundWalletInput, FundWalletResponse>;
+  createQuote: handleUnaryCall<CreateQuoteInput, CreateQuoteResponse>;
+  tradeCurrency: handleUnaryCall<TradeCurrencyInput, TradeCurrencyResponse>;
 }
 
 export interface WalletsServiceClient extends Client {
@@ -906,6 +1835,36 @@ export interface WalletsServiceClient extends Client {
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: FundWalletResponse) => void,
+  ): ClientUnaryCall;
+  createQuote(
+    request: CreateQuoteInput,
+    callback: (error: ServiceError | null, response: CreateQuoteResponse) => void,
+  ): ClientUnaryCall;
+  createQuote(
+    request: CreateQuoteInput,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: CreateQuoteResponse) => void,
+  ): ClientUnaryCall;
+  createQuote(
+    request: CreateQuoteInput,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: CreateQuoteResponse) => void,
+  ): ClientUnaryCall;
+  tradeCurrency(
+    request: TradeCurrencyInput,
+    callback: (error: ServiceError | null, response: TradeCurrencyResponse) => void,
+  ): ClientUnaryCall;
+  tradeCurrency(
+    request: TradeCurrencyInput,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: TradeCurrencyResponse) => void,
+  ): ClientUnaryCall;
+  tradeCurrency(
+    request: TradeCurrencyInput,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: TradeCurrencyResponse) => void,
   ): ClientUnaryCall;
 }
 

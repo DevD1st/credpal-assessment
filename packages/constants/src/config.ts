@@ -3,6 +3,7 @@ export const RABBITMQ_TOPICS = {
   ACCOUNT_CREATION_COMPLETE: "account.creation.complete",
   WALLET_CREATED: "wallet.created",
   WALLET_FUNDED: "wallet.funded",
+  EXCHANGE_RATE_FETCHED: "exchange.rate.fetched",
 } as const;
 
 export const REDIS_KEYS = {
@@ -13,8 +14,21 @@ export const REDIS_KEYS = {
   REFRESH_TOKEN: (jti: string) => `auth:refresh_token:${jti}`,
   FUND_WALLET: (userId: string, walletId: string, amount: number | string) =>
     `wallet:fund:${userId}:${walletId}:${amount}`,
+  GLOBAL_EXCHANGE_RATE: (base: string, target: string) =>
+    `exchange-rate:${base}:${target}`,
+  USER_QUOTE: (userId: string, base: string, target: string) =>
+    `quote:${userId}:${base}:${target}`,
 } as const;
 
 export const BULLMQ_QUEUES = {
   TRANSACTIONS: "{transactions_queue}",
 } as const;
+
+export enum SupportedCurrencies {
+  USD = "USD",
+  NGN = "NGN",
+  AUD = "AUD",
+  GBP = "GBP",
+  EUR = "EUR",
+  CAD = "CAD",
+}

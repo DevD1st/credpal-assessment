@@ -30,6 +30,9 @@ export const getConfig = (key: string) => {
       exchange: process.env.RABBITMQ_EXCHANGE || "credpal_events",
       queue: process.env.SERVICE || "wallets",
     },
+    exchangeRate: {
+      apiKey: process.env.EXCHANGE_RATE_API_KEY || "",
+    },
   };
   return key.split(".").reduce((obj, k) => obj?.[k], config as any);
 };

@@ -6,6 +6,7 @@ import { getConfig } from "./utils/index.js";
 import { ConfigModule } from "@nestjs/config";
 import { CacheModule } from "@nestjs/cache-manager";
 import { BullModule } from "@nestjs/bullmq";
+import { EventEmitterModule } from "@nestjs/event-emitter";
 import KeyvRedis, { RedisClientOptions } from "@keyv/redis";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import path from "path";
@@ -20,6 +21,7 @@ const __dirname = path.dirname(__filename);
 @Module({
   imports: [
     CqrsModule.forRoot(),
+    EventEmitterModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ["../../env/root.env", "../../env/wallets.env"],

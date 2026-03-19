@@ -19,6 +19,7 @@ import { RegisterIndividualDto } from "../dto/register-individual.dto.js";
 import { OTPExpirationDto } from "../dto/otp-expiration.dto.js";
 import { VerifyOTPDto } from "../dto/verify-otp.dto.js";
 import { AuthCredentialsDto } from "../dto/auth-credentials.dto.js";
+import { LoginDto } from "../dto/login.dto.js";
 import { lastValueFrom } from "rxjs";
 import { plainToInstance } from "class-transformer";
 
@@ -63,10 +64,10 @@ export class AuthController {
   }
 
   @Post("verify-otp")
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: "Verify OTP and complete account creation" })
   @ApiResponse({
-    status: HttpStatus.OK,
+    status: HttpStatus.CREATED,
     description:
       "OTP verified successfully. Returns access and refresh tokens.",
     type: AuthCredentialsDto,
@@ -77,6 +78,30 @@ export class AuthController {
   ) {
     const result = await lastValueFrom(
       this.authService.VerifyOTP(input, convertClientMetaToRPCMeta(ctx)),
+    );
+
+    if (result.error) {
+      const { code, message, statusCode, details } = result.error;
+      throw new BaseError(message, code, statusCode, details);
+    }
+
+    const data = result.data!;
+    return plainToInstance(AuthCredentialsDto, data, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  @Post("login")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Login user" })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Login successful. Returns access and refresh tokens.",
+    type: AuthCredentialsDto,
+  })
+  async login(@Body() input: LoginDto, @ContextHttp() ctx: ClientMetadata) {
+    const result = await lastValueFrom(
+      this.authService.Login(input, convertClientMetaToRPCMeta(ctx)),
     );
 
     if (result.error) {

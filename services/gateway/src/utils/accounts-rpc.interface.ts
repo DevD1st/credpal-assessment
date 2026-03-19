@@ -11,4 +11,8 @@ export interface IRPCAuthService {
     data: Accounts.VerifyOTPInput,
     meta: Metadata,
   ): Observable<Accounts.AuthCredentialsResponse>;
+  Login(
+    data: Accounts.LoginInput,
+    meta: Metadata,
+  ): Observable<Accounts.AuthCredentialsResponse>;
 }

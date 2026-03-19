@@ -28,3 +28,10 @@ export const getConfig = (key: string) => {
   };
   return key.split(".").reduce((obj, k) => obj?.[k], config as any);
 };
+
+export const extractBearerToken = (authorizationHeader?: string): string => {
+  if (!authorizationHeader) return "";
+  const [scheme, token] = authorizationHeader.split(" ");
+  if (scheme !== "Bearer" || !token) return "";
+  return token;
+};

@@ -8,6 +8,7 @@ import {
   ValidateAccessTokenQuery,
   ValidateRefreshTokenQuery,
 } from "../modules/auth/queries/impl.js";
+import { extractBearerToken } from "../utils/index.js";
 
 @Injectable()
 export class AccessTokenGuard implements CanActivate {
@@ -18,8 +19,7 @@ export class AccessTokenGuard implements CanActivate {
       const request = context.switchToHttp().getRequest<Request>();
       const reqContext = getContextHttp(request);
 
-      const authHeader = request.headers.authorization;
-      const token = authHeader?.split(" ")[1];
+      const token = extractBearerToken(request.headers.authorization);
       if (!token) throw new UnauthorizedError(UNAUTHORIZED);
 
       const decodedToken = await this.queryBus.execute(
@@ -47,8 +47,7 @@ export class RefreshTokenGuard implements CanActivate {
       const request = context.switchToHttp().getRequest<Request>();
       const reqContext = getContextHttp(request);
 
-      const authHeader = request.headers.authorization;
-      const token = authHeader?.split(" ")[1];
+      const token = extractBearerToken(request.headers.authorization);
       if (!token) throw new UnauthorizedError(UNAUTHORIZED);
 
       const decodedToken = await this.queryBus.execute(

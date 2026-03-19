@@ -15,4 +15,8 @@ export interface IRPCAuthService {
     data: Accounts.LoginInput,
     meta: Metadata,
   ): Observable<Accounts.AuthCredentialsResponse>;
+  RefreshToken(
+    data: Accounts.RefreshTokenInput,
+    meta: Metadata,
+  ): Observable<Accounts.AuthCredentialsResponse>;
 }

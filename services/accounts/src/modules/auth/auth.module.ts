@@ -5,11 +5,13 @@ import { AuthController } from "./controllers/auth.controller.js";
 import { RegisterAccountHandler } from "./commands/handlers/register-account.handler.js";
 import { VerifyOTPHandler } from "./commands/handlers/verify-otp.handler.js";
 import { GenerateAuthTokenForProfileHandler } from "./commands/handlers/generate-token.handler.js";
+import { LoginHandler } from "./commands/handlers/login.handler.js";
 import { RABBIT_MQ_CLIENT, ACCOUNTS_RMQ_QUEUE } from "../../utils/index.js";
 
 const CommandHandlers: any[] = [
   RegisterAccountHandler,
   VerifyOTPHandler,
+  LoginHandler,
   GenerateAuthTokenForProfileHandler,
 ];
 const QueryHandlers: any[] = [];

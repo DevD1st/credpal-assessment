@@ -7,7 +7,11 @@ import {
 import { Controller, UseFilters } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import { GrpcMethod, Payload } from "@nestjs/microservices";
-import { RegisterAccountCommand, VerifyOTPCommand } from "../commands/impl.js";
+import {
+  LoginCommand,
+  RegisterAccountCommand,
+  VerifyOTPCommand,
+} from "../commands/impl.js";
 
 @Controller()
 @UseFilters(new GrpcExceptionFilter())
@@ -36,6 +40,15 @@ export class AuthController {
     const data = await this.commandBus.execute(
       new VerifyOTPCommand(request, meta),
     );
+    return { data };
+  }
+
+  @GrpcMethod("AuthService", "Login")
+  async login(
+    @Payload() request: Accounts.LoginInput,
+    @ContextGrpc() meta: ClientMetadata,
+  ): Promise<Accounts.AuthCredentialsResponse> {
+    const data = await this.commandBus.execute(new LoginCommand(request, meta));
     return { data };
   }
 }

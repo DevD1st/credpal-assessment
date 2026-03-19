@@ -1,4 +1,5 @@
-import { ClientMetadata } from '@credpal-fx-trading-app/common';
+import { ClientMetadata } from "@credpal-fx-trading-app/common";
+import { User } from "../entities/user.entity.js";
 
 export class IsEmailUsedForAccountQuery {
   constructor(
@@ -6,3 +7,12 @@ export class IsEmailUsedForAccountQuery {
     public readonly meta: ClientMetadata,
   ) {}
 }
+
+export class GetAccountByEmailQuery {
+  constructor(
+    public readonly email: string,
+    public readonly meta: ClientMetadata,
+  ) {}
+}
+
+export type GetAccountByEmailQueryResult = User | null;

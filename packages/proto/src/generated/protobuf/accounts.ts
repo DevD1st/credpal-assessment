@@ -52,6 +52,15 @@ export interface VerifyOTPInput {
   otp: string;
 }
 
+export interface LoginInput {
+  email: string;
+  password: string;
+}
+
+export interface RefreshTokenInput {
+  refreshToken: string;
+}
+
 /**
  * ------------------------------------------
  * Responses
@@ -391,6 +400,146 @@ export const VerifyOTPInput: MessageFns<VerifyOTPInput> = {
   },
 };
 
+function createBaseLoginInput(): LoginInput {
+  return { email: "", password: "" };
+}
+
+export const LoginInput: MessageFns<LoginInput> = {
+  encode(message: LoginInput, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.email !== "") {
+      writer.uint32(10).string(message.email);
+    }
+    if (message.password !== "") {
+      writer.uint32(18).string(message.password);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): LoginInput {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseLoginInput();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.email = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.password = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): LoginInput {
+    return {
+      email: isSet(object.email) ? globalThis.String(object.email) : "",
+      password: isSet(object.password) ? globalThis.String(object.password) : "",
+    };
+  },
+
+  toJSON(message: LoginInput): unknown {
+    const obj: any = {};
+    if (message.email !== "") {
+      obj.email = message.email;
+    }
+    if (message.password !== "") {
+      obj.password = message.password;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<LoginInput>): LoginInput {
+    return LoginInput.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<LoginInput>): LoginInput {
+    const message = createBaseLoginInput();
+    message.email = object.email ?? "";
+    message.password = object.password ?? "";
+    return message;
+  },
+};
+
+function createBaseRefreshTokenInput(): RefreshTokenInput {
+  return { refreshToken: "" };
+}
+
+export const RefreshTokenInput: MessageFns<RefreshTokenInput> = {
+  encode(message: RefreshTokenInput, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.refreshToken !== "") {
+      writer.uint32(10).string(message.refreshToken);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): RefreshTokenInput {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseRefreshTokenInput();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.refreshToken = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): RefreshTokenInput {
+    return {
+      refreshToken: isSet(object.refreshToken)
+        ? globalThis.String(object.refreshToken)
+        : isSet(object.refresh_token)
+        ? globalThis.String(object.refresh_token)
+        : "",
+    };
+  },
+
+  toJSON(message: RefreshTokenInput): unknown {
+    const obj: any = {};
+    if (message.refreshToken !== "") {
+      obj.refreshToken = message.refreshToken;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<RefreshTokenInput>): RefreshTokenInput {
+    return RefreshTokenInput.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<RefreshTokenInput>): RefreshTokenInput {
+    const message = createBaseRefreshTokenInput();
+    message.refreshToken = object.refreshToken ?? "";
+    return message;
+  },
+};
+
 function createBaseOTPExpiration(): OTPExpiration {
   return { expAt: "" };
 }
@@ -633,11 +782,33 @@ export const AuthServiceService = {
       Buffer.from(AuthCredentialsResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer): AuthCredentialsResponse => AuthCredentialsResponse.decode(value),
   },
+  login: {
+    path: "/accounts.AuthService/Login" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: LoginInput): Buffer => Buffer.from(LoginInput.encode(value).finish()),
+    requestDeserialize: (value: Buffer): LoginInput => LoginInput.decode(value),
+    responseSerialize: (value: AuthCredentialsResponse): Buffer =>
+      Buffer.from(AuthCredentialsResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): AuthCredentialsResponse => AuthCredentialsResponse.decode(value),
+  },
+  refreshToken: {
+    path: "/accounts.AuthService/RefreshToken" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: RefreshTokenInput): Buffer => Buffer.from(RefreshTokenInput.encode(value).finish()),
+    requestDeserialize: (value: Buffer): RefreshTokenInput => RefreshTokenInput.decode(value),
+    responseSerialize: (value: AuthCredentialsResponse): Buffer =>
+      Buffer.from(AuthCredentialsResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): AuthCredentialsResponse => AuthCredentialsResponse.decode(value),
+  },
 } as const;
 
 export interface AuthServiceServer extends UntypedServiceImplementation {
   registerAccount: handleUnaryCall<RegisterAccountInput, OTPExpirationResponse>;
   verifyOtp: handleUnaryCall<VerifyOTPInput, AuthCredentialsResponse>;
+  login: handleUnaryCall<LoginInput, AuthCredentialsResponse>;
+  refreshToken: handleUnaryCall<RefreshTokenInput, AuthCredentialsResponse>;
 }
 
 export interface AuthServiceClient extends Client {
@@ -667,6 +838,36 @@ export interface AuthServiceClient extends Client {
   ): ClientUnaryCall;
   verifyOtp(
     request: VerifyOTPInput,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: AuthCredentialsResponse) => void,
+  ): ClientUnaryCall;
+  login(
+    request: LoginInput,
+    callback: (error: ServiceError | null, response: AuthCredentialsResponse) => void,
+  ): ClientUnaryCall;
+  login(
+    request: LoginInput,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: AuthCredentialsResponse) => void,
+  ): ClientUnaryCall;
+  login(
+    request: LoginInput,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: AuthCredentialsResponse) => void,
+  ): ClientUnaryCall;
+  refreshToken(
+    request: RefreshTokenInput,
+    callback: (error: ServiceError | null, response: AuthCredentialsResponse) => void,
+  ): ClientUnaryCall;
+  refreshToken(
+    request: RefreshTokenInput,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: AuthCredentialsResponse) => void,
+  ): ClientUnaryCall;
+  refreshToken(
+    request: RefreshTokenInput,
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: AuthCredentialsResponse) => void,

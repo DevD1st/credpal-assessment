@@ -7,6 +7,8 @@ import "protobuf/common.proto";
 service AuthService {
   rpc RegisterAccount(RegisterAccountInput) returns (OTPExpirationResponse);
   rpc VerifyOTP(VerifyOTPInput) returns (AuthCredentialsResponse);
+  rpc Login(LoginInput) returns (AuthCredentialsResponse);
+  rpc RefreshToken(RefreshTokenInput) returns (AuthCredentialsResponse);
 }
 
 // ------------------------------------------
@@ -33,6 +35,15 @@ message RegisterAccountInput {
 message VerifyOTPInput {
   string email = 1;
   string otp = 2;
+}
+
+message LoginInput {
+  string email = 1;
+  string password = 2;
+}
+
+message RefreshTokenInput {
+  string refresh_token = 1;
 }
 
 // ------------------------------------------

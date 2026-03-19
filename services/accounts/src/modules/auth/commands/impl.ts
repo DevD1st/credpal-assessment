@@ -14,3 +14,10 @@ export class VerifyOTPCommand {
     public readonly meta: ClientMetadata,
   ) {}
 }
+
+export class LoginCommand {
+  constructor(
+    public readonly request: Accounts.LoginInput,
+    public readonly meta: ClientMetadata,
+  ) {}
+}

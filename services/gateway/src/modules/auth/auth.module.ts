@@ -4,9 +4,14 @@ import { ClientsModule, Transport } from "@nestjs/microservices";
 import { join } from "path";
 import { RPC_ACCOUNTS_SERVICE } from "../../utils/index.js";
 import { AuthController } from "./controllers/auth.controller.js";
+import { ValidateAccessTokenHandler } from "./queries/handlers/validate-access-token.handler.js";
+import { ValidateRefreshTokenHandler } from "./queries/handlers/validate-refresh-token.handler.js";
 
 const CommandHandlers: [] = [];
-const QueryHandlers: [] = [];
+const QueryHandlers: any[] = [
+  ValidateAccessTokenHandler,
+  ValidateRefreshTokenHandler,
+];
 
 const PROJECT_ROOT = join(
   process.cwd(),

@@ -16,3 +16,12 @@ export class GetAccountByEmailQuery {
 }
 
 export type GetAccountByEmailQueryResult = User | null;
+
+export class GetAccountByIdQuery {
+  constructor(
+    public readonly id: string,
+    public readonly meta: ClientMetadata,
+  ) {}
+}
+
+export type GetAccountByIdQueryResult = User | null;

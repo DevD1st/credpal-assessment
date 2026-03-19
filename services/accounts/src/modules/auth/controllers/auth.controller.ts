@@ -9,6 +9,7 @@ import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import { GrpcMethod, Payload } from "@nestjs/microservices";
 import {
   LoginCommand,
+  RefreshTokenCommand,
   RegisterAccountCommand,
   VerifyOTPCommand,
 } from "../commands/impl.js";
@@ -49,6 +50,17 @@ export class AuthController {
     @ContextGrpc() meta: ClientMetadata,
   ): Promise<Accounts.AuthCredentialsResponse> {
     const data = await this.commandBus.execute(new LoginCommand(request, meta));
+    return { data };
+  }
+
+  @GrpcMethod("AuthService", "RefreshToken")
+  async refreshToken(
+    @Payload() request: Accounts.RefreshTokenInput,
+    @ContextGrpc() meta: ClientMetadata,
+  ): Promise<Accounts.AuthCredentialsResponse> {
+    const data = await this.commandBus.execute(
+      new RefreshTokenCommand(request, meta),
+    );
     return { data };
   }
 }

@@ -21,3 +21,10 @@ export class LoginCommand {
     public readonly meta: ClientMetadata,
   ) {}
 }
+
+export class RefreshTokenCommand {
+  constructor(
+    public readonly request: Accounts.RefreshTokenInput,
+    public readonly meta: ClientMetadata,
+  ) {}
+}

@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { CqrsModule } from "@nestjs/cqrs";
 import { IsEmailUsedForAccountHandler } from "./queries/handlers/is-email-used.handler.js";
 import { GetAccountByEmailHandler } from "./queries/handlers/get-account-by-email.handler.js";
+import { GetAccountByIdHandler } from "./queries/handlers/get-account-by-id.handler.js";
 import { CreateUserHandler } from "./commands/handlers/create-user.handler.js";
 import { IncrementAuthTokenVersionHandler } from "./commands/handlers/increment-token-version.handler.js";
 import { UserRepository } from "./repositories/user.repository.js";
@@ -14,6 +15,7 @@ const CommandHandlers: any[] = [
 const QueryHandlers: any[] = [
   IsEmailUsedForAccountHandler,
   GetAccountByEmailHandler,
+  GetAccountByIdHandler,
 ];
 
 @Module({

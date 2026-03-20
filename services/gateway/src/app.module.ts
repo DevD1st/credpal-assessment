@@ -6,6 +6,7 @@ import { getConfig } from "./utils/index.js";
 import { CacheModule } from "@nestjs/cache-manager";
 import KeyvRedis, { RedisClientOptions } from "@keyv/redis";
 import { AuthModule } from "./modules/auth/auth.module.js";
+import { WalletsModule } from "./modules/wallets/wallets.module.js";
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { AuthModule } from "./modules/auth/auth.module.js";
       },
     }),
     AuthModule,
+    WalletsModule,
   ],
 })
 export class AppModule {}

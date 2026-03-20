@@ -42,10 +42,10 @@ export class WalletsController {
   private walletsService: IRPCWalletsService;
 
   constructor(
-    @Inject(RPC_WALLETS_SERVICE) private readonly accountsClient: ClientGrpc,
+    @Inject(RPC_WALLETS_SERVICE) private readonly walletssClient: ClientGrpc,
   ) {
     this.walletsService =
-      this.accountsClient.getService<IRPCWalletsService>("WalletsService");
+      this.walletssClient.getService<IRPCWalletsService>("WalletsService");
   }
 
   @Post()

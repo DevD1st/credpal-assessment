@@ -33,6 +33,8 @@ import { WalletsDto } from "../dto/wallets.dto";
 import { FundWalletDto } from "../dto/fund-wallet.dto";
 import { CreateQuoteDto } from "../dto/create-quote.dto";
 import { QuoteDto } from "../dto/quote.dto";
+import { TradeCurrencyDto } from "../dto/trade-currency.dto";
+import { TransactionDto } from "../dto/transaction.dto";
 
 @ApiTags("Wallet")
 @Controller({ path: "wallet", version: "1" })
@@ -158,6 +160,35 @@ export class WalletsController {
 
     const data = result.data!;
     return plainToInstance(QuoteDto, data, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  @Post("trade")
+  @HttpCode(HttpStatus.CREATED)
+  @ApiBearerAuth("Bearer")
+  @UseGuards(AccessTokenGuard, UserGuard)
+  @ApiOperation({ summary: "Trade currency" })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: "Currency trade accepted",
+    type: TransactionDto,
+  })
+  async tradeCurrency(
+    @Body() input: TradeCurrencyDto,
+    @ContextHttp() ctx: ClientMetadata,
+  ) {
+    const result = await lastValueFrom(
+      this.walletsService.TradeCurrency(input, convertClientMetaToRPCMeta(ctx)),
+    );
+
+    if (result.error) {
+      const { code, message, statusCode, details } = result.error;
+      throw new BaseError(message, code, statusCode, details);
+    }
+
+    const data = result.data!;
+    return plainToInstance(TransactionDto, data, {
       excludeExtraneousValues: true,
     });
   }

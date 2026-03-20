@@ -113,7 +113,34 @@ flowchart LR
 
 ---
 
-## 4) Why Microservices Here?
+## 4) Implemented API Endpoints
+
+### Authentication (`/v1/auth`)
+
+- **POST** `/auth/register/individual` – Register with email and password
+- **POST** `/auth/verify-otp` – Verify OTP and receive access/refresh tokens
+- **POST** `/auth/login` – Login with email and password
+- **POST** `/auth/refresh-token` – Refresh access and refresh tokens (Bearer required)
+
+### Wallets (`/v1/wallet`)
+
+- **POST** `/wallet` – Create wallet for a supported currency (Bearer required)
+- **GET** `/wallet` – Fetch user wallets with optional filters (currency, status, pagination)
+- **POST** `/wallet/fund` – Fund wallet with idempotency protection (Bearer required)
+- **POST** `/wallet/convert` – Create FX quote for currency conversion (Bearer required)
+- **POST** `/wallet/trade` – Execute FX trade/conversion (Bearer required)
+
+### Exchange Rates (`/v1/fx`)
+
+- **GET** `/fx/rates` – Fetch current exchange rates for all supported currencies (Bearer required)
+
+### Transactions (`/v1/transactions`)
+
+- **GET** `/transactions` – Retrieve transaction history with filtering and pagination (Bearer required)
+
+---
+
+## 5) Why Microservices Here?
 
 The microservice architecture is intentional for two reasons:
 
@@ -131,7 +158,7 @@ Relevant role context: [Backend Developer JD (CredPal)](https://credpal.zohorecr
 
 ---
 
-## 5) Data Model (Tables, Relationships, and Constraints)
+## 6) Data Model (Tables, Relationships, and Constraints)
 
 ### PostgreSQL Tables
 
@@ -195,7 +222,7 @@ This structure supports traceable movement accounting and reconciliation.
 
 ---
 
-## 6) MongoDB in Analytics (Why It Is a Good Fit)
+## 7) MongoDB in Analytics (Why It Is a Good Fit)
 
 The analytics microservice is included to show why MongoDB is practical for logs/analytics workloads:
 
@@ -216,7 +243,7 @@ This directly addresses the assessment requirement to use MongoDB for non-relati
 
 ---
 
-## 7) Indexing Strategy and Why It Matters
+## 8) Indexing Strategy and Why It Matters
 
 Indexes and constraints were intentionally added to support correctness and scale:
 
@@ -238,7 +265,7 @@ Benefits:
 
 ---
 
-## 8) UUIDv7 as Primary Key (Scalability Choice)
+## 9) UUIDv7 as Primary Key (Scalability Choice)
 
 Primary entities default to **UUIDv7**.
 
@@ -249,11 +276,11 @@ Why:
 - Better insertion behavior at scale for write-heavy tables
 - Supports distributed ID generation without central coordination
 
-This is one deliberate response to the assessment’s scaling direction.
+This is one deliberate response to the assessment's scaling direction.
 
 ---
 
-## 9) Idempotency and Duplicate-Protection in Transactions
+## 10) Idempotency and Duplicate-Protection in Transactions
 
 Funding flow uses **two-level duplicate checks**:
 
@@ -267,7 +294,178 @@ Combined with `PENDING → SUCCESS/FAILED` state transitions and worker-side loc
 
 ---
 
-## 10) Endpoint Interpretation Assumption
+## 11) Authentication & Authorization
+
+### JWT Token Architecture
+
+- **Access Tokens**: 15-minute expiration with JWT ID (JTI) and token version tracking
+- **Refresh Tokens**: 30-day expiration with persistent Redis validation state (VALID/REVOKED)
+- **Token Versioning**: Automatic session invalidation on new login by incrementing stored `tokenVersion`
+- **Token Structure**: Includes metadata - account type (USER/ADMIN), profile ID, JTI for refresh validation
+
+### Authorization Guard Chain
+
+1. **AccessTokenGuard** – Validates JWT access token, extracts user identity, populates request context
+2. **RefreshTokenGuard** – Validates refresh token from Bearer header, checks Redis state
+3. **UserGuard** – Enforces account type is USER (blocks admin/system accounts from user-facing endpoints)
+
+### Master OTP (Development Only)
+
+- Non-production environment support for testing OTP flows without email delivery
+- Logs warnings for audit trails
+- Configurable via `MASTER_OTP` environment variable
+
+---
+
+## 12) Financial Precision & Decimal Math
+
+All monetary calculations use **Decimal.js** to prevent floating-point rounding errors:
+
+- Wallet balance updates maintain 18.4 decimal precision
+- FX rate calculations scaled by 10,000 for integer representation
+- Quote amount calculations precise to smallest currency unit
+- Ledger running balance snapshots accurate for reconciliation
+
+This is critical for financial compliance and audit accuracy.
+
+---
+
+## 13) CQRS Pattern (Command Query Responsibility Segregation)
+
+The application cleanly separates commands (mutations) from queries (reads):
+
+**Commands** (state changes):
+
+- `CreateWalletCommand`, `FundWalletCommand`, `TradeCurrencyCommand`
+- `VerifyOTPCommand`, `LoginCommand`, `RegisterAccountCommand`
+
+**Queries** (state reads):
+
+- `GetWalletsQuery`, `FetchExchangeRatesQuery`, `GetTransactionsQuery`
+- `ValidateAccessTokenQuery`, `ValidateRefreshTokenQuery`
+
+**Buses**: `CommandBus` and `QueryBus` centralize routing and dependency injection.
+
+Benefits: Clear responsibility, easier testing, better separation of concerns, scalability for read/write optimization.
+
+---
+
+## 14) Asynchronous Processing with BullMQ Workers
+
+Wallet funding and currency trades are processed asynchronously to ensure reliability and scalability:
+
+**Job Types**:
+
+- `FUND_WALLET_JOB` – Funds wallet with pessimistic locking and ledger generation
+- `TRADE_CURRENCY_JOB` – Executes multi-wallet conversion with decimal precision
+
+**Features**:
+
+- Pessimistic write locks during wallet updates
+- Automatic retry on transient failures
+- Rollback with status update to FAILED on fatal errors
+- Separation of request acceptance from processing completion
+
+---
+
+## 15) Redis Caching Strategy
+
+Cache keys with intentional TTLs for different use cases:
+
+| Use Case                 | TTL        | Purpose                                                      |
+| ------------------------ | ---------- | ------------------------------------------------------------ |
+| **Exchange Rates**       | 2 hours    | Global rate cache, reduces API calls to exchangerate-api.com |
+| **User Quotes**          | 10 minutes | Per-user, per-currency-pair quote requests                   |
+| **OTP Verification**     | 60 minutes | Email-based account verification codes                       |
+| **Refresh Tokens**       | 30 days    | JTI state tracking (VALID/REVOKED)                           |
+| **Wallet Funding Cache** | 60 seconds | Idempotency burst protection                                 |
+
+---
+
+## 16) Error Handling & Custom Validation
+
+### Custom Error Classes
+
+- `ValidationError` (400) – DTO validation failures
+- `BadRequestError` (400) – Invalid request data
+- `UnauthorizedError` (401) – Missing/invalid auth
+- `ForbiddenError` (403) – Insufficient permissions
+- `NotFoundError` (404) – Resource not found
+- `ConflictError` (409) – Business logic conflict (e.g., duplicate wallet currency)
+- `InsufficientFundsError` (409) – Wallet balance insufficient
+
+### Custom Validators
+
+- **@IsDifferentFrom()** – Cross-field validation ensuring base ≠ target currency
+- **@Matches()** – UUID regex validation for wallet/quote IDs
+- **@IsEnum()** – Required for all enums (SupportedCurrencies, WalletStatus, TransactionStatus)
+- **@Transform()** – Uppercase normalization for currency codes
+
+### Global Exception Filters
+
+- HTTP exception filter – Catches all exceptions and formats consistent error responses
+- gRPC exception filter – Formats gRPC errors with proper status codes
+
+---
+
+## 17) Request Middleware & Context Extraction
+
+### RequestIdMiddleware
+
+- Generates unique request IDs for every incoming request
+- Propagates via HTTP headers for distributed tracing
+
+### ContextHttp Decorator
+
+- Extracts client metadata from request:
+  - IP address
+  - User agent
+  - Country (geolocation)
+  - Device info
+- Available to all endpoint handlers via `@ContextHttp()` parameter
+
+### Serialization & Versioning
+
+- **ClassSerializerInterceptor** with `@Expose()` decorators filters response fields
+- **API Versioning** via `@Controller({ version: "1" })` enables future v2 compatibility
+
+---
+
+## 18) Exchange Rate Integration
+
+### Real-Time Rate Fetching
+
+- Integrates with **exchangerate-api.com** for live FX rates
+- Supports: USD, NGN, AUD, GBP, EUR, CAD
+- Automatic rate scaling (×10,000 stored as integer for precision)
+
+### Rate Caching & Events
+
+- Global cache with 2-hour TTL reduces API call volume
+- Event-driven cache refresh via `FxListener` on `exchange.rate.fetched` topic
+- Enables real-time updates across distributed instances
+
+---
+
+## 19) Structured Logging & Observability
+
+### Winston Logger
+
+- JSON-formatted logs in production, colorized in development
+- Service name and environment automatically tagged
+- Request context automatically included (request ID, user ID, IP, session ID)
+
+### Log Coverage
+
+- Auth flows (registration, OTP, login, token refresh)
+- Wallet operations (creation, funding, trading)
+- FX rate fetches and quote generation
+- Transaction processing and ledger updates
+- Error stack traces with request context
+
+---
+
+## 20) Endpoint Interpretation Assumption
 
 The brief is ambiguous about the distinction between:
 
@@ -281,7 +479,7 @@ Assumption used in this implementation:
 
 ---
 
-## 11) Scalability and Extensibility Notes
+## 21) Scalability and Extensibility Notes
 
 The solution is designed to scale from the start and to support future growth (including large user volumes):
 
@@ -301,7 +499,7 @@ The system is also easy to extend for additional currencies/trading pairs:
 
 ---
 
-## 12) Alignment to Assessment + Architecture Decisions
+## 22) Alignment to Assessment + Architecture Decisions
 
 Assumption made for technology choices:
 
@@ -311,7 +509,7 @@ Reference for role expectations: [CredPal Backend Developer JD](https://credpal.
 
 ---
 
-## 13) Current Scope Status
+## 23) Current Scope Status
 
 ### Implemented core
 
@@ -334,7 +532,7 @@ Reference for role expectations: [CredPal Backend Developer JD](https://credpal.
 
 ---
 
-## 14) Run Instructions
+## 24) Run Instructions
 
 ### Environment File Structure
 
@@ -403,7 +601,7 @@ This starts infrastructure and services:
 
 ---
 
-## 15) Repository Layout
+## 25) Repository Layout
 
 ```text
 packages/
@@ -426,7 +624,7 @@ scripts/         # DB init, instrumentation
 
 ---
 
-## 16) Final Notes
+## 26) Final Notes
 
 This solution is intentionally architected like a real fintech backend: contract-first interfaces, safe transaction handling, asynchronous workflows, and scalable storage patterns.
 

@@ -32,7 +32,7 @@ export interface IRPCFxService {
   ): Observable<Wallets.FetchExchangeRatesResponse>;
 }
 
-export interface IRPCTransactionService {
+export interface IRPCTransactionsService {
   GetTransactions(
     data: Wallets.GetTransactionsInput,
     meta: Metadata,

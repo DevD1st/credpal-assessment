@@ -8,6 +8,7 @@ import KeyvRedis, { RedisClientOptions } from "@keyv/redis";
 import { AuthModule } from "./modules/auth/auth.module.js";
 import { WalletsModule } from "./modules/wallets/wallets.module.js";
 import { FxModule } from "./modules/fx/fx.module.js";
+import { TransactionsModule } from "./modules/transactions/transactions.module.js";
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { FxModule } from "./modules/fx/fx.module.js";
     AuthModule,
     WalletsModule,
     FxModule,
+    TransactionsModule,
   ],
 })
 export class AppModule {}

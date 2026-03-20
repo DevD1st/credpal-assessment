@@ -7,7 +7,7 @@ export interface IRPCWalletsService {
     data: Wallets.CreateWalletInput,
     meta: Metadata,
   ): Observable<Wallets.CreateWalletResponse>;
-  GetWallet(
+  GetWallets(
     data: Wallets.GetWalletsInput,
     meta: Metadata,
   ): Observable<Wallets.GetWalletsResponse>;
